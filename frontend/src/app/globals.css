@@ -1,0 +1,79 @@
+@import "tailwindcss";
+
+:root {
+  --background: #080808;
+  --foreground: #f4f4f5;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+}
+
+button,
+input,
+a {
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease,
+    transform 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.noise-grid {
+  background-color: #080808;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    radial-gradient(circle at 75% 20%, rgba(59, 130, 246, 0.11), transparent 32%);
+  background-size: 48px 48px, 48px 48px, 100% 100%;
+}
+
+.paper-preview {
+  background-image: linear-gradient(rgba(0, 0, 0, 0.035) 1px, transparent 1px);
+  background-size: 100% 18px;
+}
+
+.skeleton-shimmer {
+  background-image: linear-gradient(
+    100deg,
+    #171717 8%,
+    #222 38%,
+    #2b2b2b 50%,
+    #222 62%,
+    #171717 92%
+  );
+  background-size: 220% 100%;
+  animation: skeleton-shimmer 1.6s linear infinite;
+}
+
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: 120% 0;
+  }
+
+  100% {
+    background-position: -120% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-shimmer {
+    animation: none;
+  }
+}
+
+input[type="search"]::-webkit-search-cancel-button {
+  filter: invert(1);
+}
