@@ -3,39 +3,52 @@ interface AtlasCoreLogoProps {
 }
 
 export default function AtlasCoreLogo({
-  className = "h-6 w-7",
+  className = "h-8 w-8",
 }: AtlasCoreLogoProps) {
   return (
     <span
       aria-hidden="true"
-      className={`inline-flex shrink-0 items-center justify-center text-[#3b82f6] ${className}`}
+      className={`inline-flex shrink-0 items-center justify-center ${className}`}
     >
       <svg
         className="h-full w-full"
         fill="none"
-        viewBox="0 0 40 36"
+        viewBox="0 0 40 40"
       >
+        <defs>
+          <linearGradient id="atlascore-logo-stroke" x1="10" y1="30" x2="30" y2="9" gradientUnits="userSpaceOnUse">
+            <stop stopColor="#60a5fa" />
+            <stop offset="1" stopColor="#f8fafc" />
+          </linearGradient>
+        </defs>
+        <rect
+          x="3.5"
+          y="3.5"
+          width="33"
+          height="33"
+          rx="9"
+          fill="#09090b"
+          stroke="#27272a"
+        />
         <path
-          d="M3.5 29.5 13.5 6.5l10 23M7.5 20.5h12"
-          stroke="currentColor"
-          strokeLinejoin="round"
+          d="M11 29 20 10.5 29 29"
+          stroke="url(#atlascore-logo-stroke)"
           strokeLinecap="round"
-          strokeWidth="2.25"
+          strokeLinejoin="round"
+          strokeWidth="3"
         />
         <path
-          d="M36 9.5 31.5 6h-5L22 10.5v15l4.5 4.5h5l4.5-3.5"
-          stroke="currentColor"
-          strokeLinecap="square"
-          strokeLinejoin="miter"
-          strokeWidth="2.25"
+          d="M15.5 22.5h9"
+          stroke="#f8fafc"
+          strokeLinecap="round"
+          strokeWidth="2.5"
         />
-        <path
-          d="M26.5 6v4.5H22M22 25.5h4.5V30"
-          stroke="currentColor"
-          strokeWidth="1"
+        <circle
+          cx="20"
+          cy="22.5"
+          r="2.4"
+          fill="#3b82f6"
         />
-        <rect x="34.5" y="8" width="3" height="3" fill="currentColor" />
-        <rect x="34.5" y="25" width="3" height="3" fill="currentColor" />
       </svg>
     </span>
   );

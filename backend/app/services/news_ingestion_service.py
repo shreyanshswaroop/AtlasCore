@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from email.utils import parsedate_to_datetime
+from html.parser import HTMLParser
 import re
 from urllib.parse import urljoin, urlparse
 
@@ -23,6 +24,38 @@ class NewsIngestionResult:
     fetched: int
     processed: int
     failed: int
+
+
+class OpenGraphImageParser(HTMLParser):
+    def __init__(self) -> None:
+        super().__init__(convert_charrefs=True)
+        self.image_url: str | None = None
+
+    def handle_starttag(
+        self,
+        tag: str,
+        attrs: list[tuple[str, str | None]],
+    ) -> None:
+        if self.image_url is not None or tag.lower() != "meta":
+            return
+
+        attributes = {
+            key.lower(): value
+            for key, value in attrs
+            if value is not None
+        }
+        meta_key = (
+            attributes.get("property")
+            or attributes.get("name")
+            or attributes.get("itemprop")
+        )
+
+        if (
+            meta_key is not None
+            and meta_key.lower()
+            in {"og:image", "og:image:url", "twitter:image", "image"}
+        ):
+            self.image_url = attributes.get("content")
 
 
 def ingest_news(
@@ -299,22 +332,13 @@ def fetch_open_graph_image(
         return None
 
     html = response.text[:200_000]
+    parser = OpenGraphImageParser()
+    parser.feed(html)
 
-    for property_name in ("og:image", "twitter:image"):
-        image_match = re.search(
-            (
-                r'<meta[^>]+(?:property|name)=["\']'
-                + re.escape(property_name)
-                + r'["\'][^>]+content=["\']([^"\']+)["\']'
-            ),
-            html,
-            flags=re.IGNORECASE,
-        )
+    if parser.image_url:
+        image_url = urljoin(source_url, parser.image_url)
 
-        if image_match:
-            image_url = urljoin(source_url, image_match.group(1))
-
-            if is_valid_article_image_url(image_url, source):
-                return image_url
+        if is_valid_article_image_url(image_url, source):
+            return image_url
 
     return None

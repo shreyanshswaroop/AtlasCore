@@ -1,9 +1,16 @@
 import Navbar from "@/components/Navbar";
 import NewsExplorer from "@/components/NewsExplorer";
 import { getCompanyLeaderboard, getNews } from "@/lib/api";
+import { Newsreader } from "next/font/google";
+
+const headlineSerif = Newsreader({
+  subsets: ["latin"],
+  weight: ["300"],
+});
 
 interface HomeProps {
   searchParams?: Promise<{
+    query?: string;
     view?: string;
   }>;
 }
@@ -12,28 +19,25 @@ export default async function Home({ searchParams }: HomeProps) {
   const resolvedSearchParams = await searchParams;
   const initialView =
     resolvedSearchParams?.view === "leaderboard" ? "leaderboard" : "news";
-  const initialQuery = "All news";
+  const initialQuery = resolvedSearchParams?.query?.trim() || "All news";
   const [data, leaderboard] = await Promise.all([
-    getNews(undefined, 12),
+    getNews(initialQuery === "All news" ? undefined : initialQuery, 12),
     getCompanyLeaderboard(150),
   ]);
 
   return (
-    <main className="min-h-screen bg-[#080808] text-zinc-100">
+    <main className="site-background min-h-screen text-zinc-100">
       <Navbar />
 
-      <section className="noise-grid border-b border-white/10">
-        <div className="mx-auto max-w-[1500px] px-5 py-14 sm:px-8 sm:py-20">
-          <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
+      <section>
+        <div className="mx-auto max-w-[1500px] px-5 pb-8 pt-14 sm:px-8 sm:pb-10 sm:pt-16">
+          <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
             <div>
-              <p className="mb-5 font-mono text-xs uppercase tracking-[0.22em] text-[#3b82f6]">
-                Independent AI research index
-              </p>
-              <h1 className="max-w-4xl font-serif text-5xl leading-[0.95] tracking-[-0.04em] text-white sm:text-7xl lg:text-8xl">
-                Latest in AI.
+              <h1 className={`${headlineSerif.className} max-w-4xl text-4xl font-light leading-[0.95] tracking-[-0.04em] text-white sm:text-5xl lg:text-[4.25rem]`}>
+                Latest in AI
               </h1>
             </div>
-            <p className="max-w-md border-l border-zinc-700 pl-5 text-sm leading-6 text-zinc-400">
+            <p className="max-w-md text-sm leading-6 text-zinc-400 lg:text-right">
               Search, filter, and read the AI news shaping intelligent systems.
               Updated from leading labs, builders, and infrastructure teams.
             </p>
@@ -42,7 +46,7 @@ export default async function Home({ searchParams }: HomeProps) {
       </section>
 
       <NewsExplorer
-        key={initialView}
+        key={`${initialView}-${initialQuery}`}
         initialItems={data.items}
         initialQuery={initialQuery}
         initialTotalCount={data.count}

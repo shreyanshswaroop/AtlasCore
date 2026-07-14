@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     atlascore_auto_sync_interval_minutes: int = 360
     atlascore_sync_topics: str = ""
     atlascore_sync_max_results_per_topic: int = 50
-    atlascore_news_fetch_og_images: bool = False
+    atlascore_news_fetch_og_images: bool = True
     atlascore_news_window_days: int = 30
     atlascore_sync_email_enabled: bool = False
     atlascore_sync_email_to: str | None = None
@@ -26,6 +26,7 @@ class Settings(BaseSettings):
     @field_validator(
         "atlascore_auto_sync_enabled",
         "atlascore_auto_sync_on_startup",
+        "atlascore_news_fetch_og_images",
         "atlascore_sync_email_enabled",
         "smtp_use_tls",
         mode="before",

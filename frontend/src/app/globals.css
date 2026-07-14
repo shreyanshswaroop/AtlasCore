@@ -2,7 +2,7 @@
 @plugin "@tailwindcss/typography";
 
 :root {
-  --background: #080808;
+  --background: #070707;
   --foreground: #f4f4f5;
 }
 
@@ -21,6 +21,56 @@ body {
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
 }
 
+.site-background {
+  background-color: var(--background);
+  background-image: url("data:image/svg+xml,%3Csvg width='34' height='34' viewBox='0 0 34 34' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='34' height='34' fill='%23070707'/%3E%3Ccircle cx='4' cy='4' r='0.72' fill='%23ffffff' opacity='0.12'/%3E%3Ccircle cx='22' cy='13' r='0.52' fill='%23ffffff' opacity='0.075'/%3E%3Ccircle cx='12' cy='27' r='0.46' fill='%23ffffff' opacity='0.055'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+}
+
+.matrix-nav-link {
+  position: relative;
+  display: inline-block;
+  isolation: isolate;
+}
+
+.matrix-nav-link::before,
+.matrix-nav-link::after {
+  content: attr(data-text);
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  text-shadow: 0 0 8px currentColor;
+}
+
+.matrix-nav-link::before {
+  color: #f8fafc;
+}
+
+.matrix-nav-link::after {
+  color: #3b82f6;
+}
+
+.matrix-nav-link:hover,
+.matrix-nav-link:focus-visible {
+  color: #f8fafc;
+  text-shadow:
+    0 0 10px rgba(248, 250, 252, 0.46),
+    0 0 18px rgba(59, 130, 246, 0.28);
+}
+
+.matrix-nav-link:hover::before,
+.matrix-nav-link:focus-visible::before {
+  animation: matrix-scan 720ms steps(2, end) infinite;
+  opacity: 0.72;
+}
+
+.matrix-nav-link:hover::after,
+.matrix-nav-link:focus-visible::after {
+  animation: matrix-shift 520ms steps(2, end) infinite;
+  opacity: 0.58;
+}
+
 button,
 input,
 a {
@@ -30,15 +80,6 @@ a {
     color 160ms ease,
     transform 160ms ease,
     box-shadow 160ms ease;
-}
-
-.noise-grid {
-  background-color: #080808;
-  background-image:
-    linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
-    radial-gradient(circle at 75% 20%, rgba(59, 130, 246, 0.11), transparent 32%);
-  background-size: 48px 48px, 48px 48px, 100% 100%;
 }
 
 .news-preview {
@@ -67,6 +108,10 @@ a {
   animation: atlas-caret 900ms steps(1, end) infinite;
 }
 
+.news-layout-enter {
+  animation: news-layout-enter 240ms ease-out both;
+}
+
 @keyframes skeleton-shimmer {
   0% {
     background-position: 120% 0;
@@ -74,6 +119,18 @@ a {
 
   100% {
     background-position: -120% 0;
+  }
+}
+
+@keyframes news-layout-enter {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
@@ -102,13 +159,70 @@ a {
   }
 }
 
+@keyframes matrix-scan {
+  0% {
+    clip-path: inset(0 0 74% 0);
+    transform: translate(0, 0);
+  }
+
+  24% {
+    clip-path: inset(38% 0 30% 0);
+    transform: translate(-1px, 1px);
+  }
+
+  48% {
+    clip-path: inset(70% 0 0 0);
+    transform: translate(1px, -1px);
+  }
+
+  72% {
+    clip-path: inset(16% 0 58% 0);
+    transform: translate(-1px, 0);
+  }
+
+  100% {
+    clip-path: inset(0 0 74% 0);
+    transform: translate(0, 0);
+  }
+}
+
+@keyframes matrix-shift {
+  0% {
+    clip-path: inset(62% 0 8% 0);
+    transform: translate(1px, 0);
+  }
+
+  35% {
+    clip-path: inset(10% 0 66% 0);
+    transform: translate(-1px, -1px);
+  }
+
+  70% {
+    clip-path: inset(44% 0 32% 0);
+    transform: translate(1px, 1px);
+  }
+
+  100% {
+    clip-path: inset(62% 0 8% 0);
+    transform: translate(1px, 0);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .skeleton-shimmer {
     animation: none;
   }
 
   .animate-atlas-pulse,
-  .animate-atlas-caret {
+  .animate-atlas-caret,
+  .news-layout-enter {
+    animation: none;
+  }
+
+  .matrix-nav-link:hover::before,
+  .matrix-nav-link:focus-visible::before,
+  .matrix-nav-link:hover::after,
+  .matrix-nav-link:focus-visible::after {
     animation: none;
   }
 }

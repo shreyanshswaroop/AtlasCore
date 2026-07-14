@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { getNews, getNewsCounts } from "@/lib/api";
 import type { CompanyLeaderboardItem } from "@/types/company";
@@ -20,6 +20,7 @@ interface NewsExplorerProps {
 }
 
 type ExplorerView = "news" | "leaderboard";
+type NewsLayout = "grid" | "list";
 
 const skeletonCards = ["a", "b", "c", "d", "e", "f"];
 const leaderboardSkeletonRows = [
@@ -134,13 +135,13 @@ export default function NewsExplorer({
   initialLeaderboardItems,
 }: NewsExplorerProps) {
   const [activeView, setActiveView] = useState<ExplorerView>(initialView);
+  const [newsLayout, setNewsLayout] = useState<NewsLayout>("grid");
   const [items, setItems] = useState<NewsItem[]>(initialItems);
   const leaderboardItems = initialLeaderboardItems;
   const [totalResultCount, setTotalResultCount] = useState(initialTotalCount);
   const [categoryCounts, setCategoryCounts] = useState<Record<string, number>>({
     ALL: initialTotalCount,
   });
-  const [query, setQuery] = useState("");
   const [searchedQuery, setSearchedQuery] = useState(
     initialView === "leaderboard" ? "ALL" : initialQuery
   );
@@ -316,20 +317,8 @@ export default function NewsExplorer({
     return () => observer.disconnect();
   }, [hasMoreItems, loadNextPage]);
 
-  async function handleSearch(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const cleanedQuery = query.trim();
-
-    setActiveCategory(cleanedQuery ? "" : "ALL");
-    await loadNews(
-      cleanedQuery || undefined,
-      cleanedQuery || "All news"
-    );
-  }
-
   async function handleCategoryChange(category: CategoryFilter) {
     setActiveCategory(category.label);
-    setQuery(category.query ?? "");
 
     await loadNews(
       category.label === "ALL" ? undefined : category.query,
@@ -393,32 +382,12 @@ export default function NewsExplorer({
   }
 
   return (
-    <section id="discover" className="mx-auto max-w-[1500px] px-5 py-10 sm:px-8 sm:py-14">
-      <form onSubmit={handleSearch} className="mb-12 ml-auto flex w-full max-w-xl border border-zinc-800 bg-[#0b0b0b] focus-within:border-zinc-600">
-        <label htmlFor="news-search" className="sr-only">Search AI news</label>
-        <span className="grid w-14 place-items-center border-r border-zinc-800 font-mono text-zinc-600">⌕</span>
-        <input
-          id="news-search"
-          type="search"
-          value={query}
-          onChange={(event) => setQuery(event.target.value)}
-          placeholder="SEARCH NEWS, COMPANIES, TOPICS..."
-          className="min-h-14 min-w-0 flex-1 bg-transparent px-4 font-mono text-xs tracking-[0.12em] text-white outline-none placeholder:text-zinc-700"
-        />
-        <button
-          type="submit"
-          disabled={isLoading}
-          className="border-l border-[#3b82f6] bg-[#3b82f6] px-5 font-mono text-xs font-bold uppercase tracking-[0.12em] text-black hover:bg-white disabled:opacity-50 sm:px-7"
-        >
-          {isLoading ? "Scanning" : "Search"}
-        </button>
-      </form>
-
+    <section id="discover" className="mx-auto max-w-[1500px] px-5 pb-10 pt-6 sm:px-8 sm:pb-14 sm:pt-8">
       {error && <div className="mb-8 border border-red-900 bg-red-950/30 px-5 py-4 font-mono text-xs text-red-300">{error}</div>}
 
-      <div className="grid gap-10 lg:grid-cols-[270px_minmax(0,1fr)]">
+      <div className="grid gap-8 lg:grid-cols-[270px_minmax(0,1fr)]">
         <aside>
-          <p className="mb-4 font-mono text-[11px] uppercase tracking-[0.18em] text-zinc-600">Topics / Index</p>
+          <p className="mb-4 font-mono text-[11px] uppercase tracking-[0.18em] text-zinc-600">Topics</p>
           <CategoryFilters activeCategory={activeCategory} counts={categoryCounts} onCategoryChange={handleCategoryChange} disabled={isLoading} />
           <div className="mt-8 hidden border-t border-zinc-800 pt-5 font-mono text-[10px] uppercase leading-5 tracking-[0.12em] text-zinc-700 lg:block">
             <p>Source: AI feeds</p>
@@ -429,16 +398,13 @@ export default function NewsExplorer({
         <div className="min-w-0">
           <div id="trending" className="mb-5 flex flex-col gap-4 border-b border-zinc-800 pb-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-[#3b82f6]">
-                {activeView === "leaderboard" ? "Leaderboard" : "Last 30 days"}
-              </p>
-              <h2 className="mt-2 text-2xl font-medium tracking-tight text-white">
+              <h2 className="font-mono text-[11px] font-normal uppercase tracking-[0.12em] text-zinc-300">
                 {activeView === "leaderboard"
                   ? "Top companies"
-                  : searchedQuery === "All news" || searchedQuery === "ALL" ? "All indexed news" : `Results for “${searchedQuery}”`}
+                  : searchedQuery === "All news" || searchedQuery === "ALL" ? "Latest" : `Results for “${searchedQuery}”`}
               </h2>
             </div>
-            <div className="flex items-center gap-5 font-mono text-[11px] uppercase tracking-[0.12em] text-zinc-600">
+            <div className="flex flex-wrap items-center gap-4 font-mono text-[11px] uppercase tracking-[0.12em] text-zinc-600">
               <span>
                 {activeView === "leaderboard"
                   ? `${leaderboardItems.length.toString().padStart(2, "0")} companies`
@@ -449,6 +415,39 @@ export default function NewsExplorer({
               <span className="border-b border-[#3b82f6] pb-1 text-zinc-300">
                 {activeView === "leaderboard" ? "Catalog" : "Last 30 days"}
               </span>
+              {activeView === "news" && (
+                <div className="flex border border-zinc-800 bg-[#0b0b0b]">
+                  {(["grid", "list"] as NewsLayout[]).map((layout) => (
+                    <button
+                      key={layout}
+                      type="button"
+                      aria-label={`Show news as ${layout}`}
+                      aria-pressed={newsLayout === layout}
+                      onClick={() => setNewsLayout(layout)}
+                      className={`grid h-8 w-9 place-items-center transition-colors ${
+                        newsLayout === layout
+                          ? "bg-[#101010] text-zinc-200"
+                          : "text-zinc-500 hover:text-zinc-100"
+                      }`}
+                    >
+                      {layout === "grid" ? (
+                        <span className="grid h-3.5 w-3.5 grid-cols-2 gap-0.5" aria-hidden="true">
+                          <span className="border border-current" />
+                          <span className="border border-current" />
+                          <span className="border border-current" />
+                          <span className="border border-current" />
+                        </span>
+                      ) : (
+                        <span className="grid w-4 gap-1" aria-hidden="true">
+                          <span className="h-px bg-current" />
+                          <span className="h-px bg-current" />
+                          <span className="h-px bg-current" />
+                        </span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
@@ -467,8 +466,22 @@ export default function NewsExplorer({
             </div>
           ) : items.length > 0 ? (
             <>
-              <div className="grid md:grid-cols-2 xl:grid-cols-3">
-                {items.map((item, index) => <NewsCard key={item.id} item={item} index={index} />)}
+              <div
+                key={newsLayout}
+                className={
+                  newsLayout === "grid"
+                    ? "news-layout-enter grid md:grid-cols-2 xl:grid-cols-3"
+                    : "news-layout-enter grid gap-3"
+                }
+              >
+                {items.map((item, index) => (
+                  <NewsCard
+                    key={item.id}
+                    item={item}
+                    index={index}
+                    variant={newsLayout}
+                  />
+                ))}
               </div>
 
               <div ref={loadMoreRef} className="flex justify-center py-8">

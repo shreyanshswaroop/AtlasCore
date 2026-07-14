@@ -4,6 +4,7 @@ import Link from "next/link";
 interface NewsCardProps {
   item: NewsItem;
   index?: number;
+  variant?: "grid" | "list";
 }
 
 const labels: Record<string, string> = {};
@@ -11,6 +12,7 @@ const labels: Record<string, string> = {};
 export default function NewsCard({
   item,
   index = 0,
+  variant = "grid",
 }: NewsCardProps) {
   const publishedDate = new Intl.DateTimeFormat("en-US", {
     month: "short",
@@ -35,13 +37,22 @@ export default function NewsCard({
   const detailUrl = `/news/${encodeURIComponent(item.id)}`;
   const sourceUrl = item.source_url ?? "#";
   const sourceName = item.source_name ?? "Source";
+  const isList = variant === "list";
 
   return (
-    <article className="group flex min-h-[510px] flex-col border border-zinc-800 bg-[#0a0a0a] transition hover:relative hover:z-10 hover:border-zinc-600">
+    <article
+      className={`group border border-zinc-800 bg-[#0a0a0a] transition hover:relative hover:z-10 hover:border-zinc-600 ${
+        isList
+          ? "grid md:grid-cols-[280px_minmax(0,1fr)]"
+          : "flex min-h-[510px] flex-col"
+      }`}
+    >
       <Link
         href={detailUrl}
         aria-label={`Open ${item.title}`}
-        className="news-preview m-4 mb-0 block h-44 overflow-hidden border border-zinc-700 bg-[#e9e8e3] p-4 text-zinc-950 transition group-hover:border-zinc-500"
+        className={`news-preview block h-44 overflow-hidden border border-zinc-700 bg-[#e9e8e3] p-4 text-zinc-950 transition group-hover:border-zinc-500 ${
+          isList ? "m-4 md:h-[calc(100%-2rem)]" : "m-4 mb-0"
+        }`}
       >
         {item.image_url ? (
           <img
@@ -92,13 +103,28 @@ export default function NewsCard({
           <span className="ml-2">{category}</span>
         </p>
 
-        <h3 className="line-clamp-3 text-lg font-medium leading-snug tracking-[-0.02em] text-zinc-100 decoration-[#3b82f6] underline-offset-4 group-hover:underline">
+        <h3
+          className={`relative pr-8 font-medium leading-snug tracking-[-0.02em] text-zinc-100 decoration-[#3b82f6] underline-offset-4 group-hover:underline ${
+            isList ? "line-clamp-2 text-xl" : "line-clamp-3 text-lg"
+          }`}
+        >
           <Link href={detailUrl}>
             {item.title}
           </Link>
+
+          <span
+            aria-hidden="true"
+            className="absolute bottom-0 right-0 translate-y-0.5 font-mono text-2xl leading-none text-zinc-100 opacity-0 transition group-hover:translate-x-0.5 group-hover:opacity-100 group-focus-within:opacity-100"
+          >
+            ↗
+          </span>
         </h3>
 
-        <p className="mt-3 line-clamp-3 text-xs leading-5 text-zinc-500">
+        <p
+          className={`mt-3 text-xs leading-5 text-zinc-500 ${
+            isList ? "line-clamp-2" : "line-clamp-3"
+          }`}
+        >
           {item.summary}
         </p>
 

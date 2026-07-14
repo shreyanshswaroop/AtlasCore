@@ -68,7 +68,7 @@ def get_news_window_cutoff() -> datetime:
 def get_news(
     query: str | None = Query(
         default=None,
-        min_length=2,
+        min_length=1,
         max_length=500,
     ),
     topic: str | None = Query(
