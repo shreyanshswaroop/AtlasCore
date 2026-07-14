@@ -4,6 +4,7 @@ interface CategoryFiltersProps {
   counts?: Record<string, number>;
   disabled?: boolean;
   loading?: boolean;
+  hideEmpty?: boolean;
 }
 
 export type CategoryFilter = {
@@ -293,14 +294,23 @@ export default function CategoryFilters({
   counts,
   disabled = false,
   loading = false,
+  hideEmpty = false,
 }: CategoryFiltersProps) {
   if (loading) {
     return <CategoryFiltersSkeleton />;
   }
 
+  const visibleCategories = hideEmpty
+    ? categories.filter((category) => {
+        const count = counts?.[category.label];
+
+        return category.label === "ALL" || count === undefined || count > 0;
+      })
+    : categories;
+
   return (
     <div className="flex gap-2 overflow-x-auto pb-2 lg:block lg:max-h-[620px] lg:space-y-0.5 lg:overflow-y-auto lg:overflow-x-hidden lg:pb-0 lg:pr-1">
-      {categories.map((category) => {
+      {visibleCategories.map((category) => {
         const isActive = activeCategory === category.label;
         const count = counts?.[category.label];
 

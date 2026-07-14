@@ -15,7 +15,8 @@ export async function getNews(
   query?: string,
   limit = 12,
   offset = 0,
-  topic?: string
+  topic?: string,
+  sort: "latest" | "upvotes" = "latest"
 ): Promise<NewsResponse> {
   const url = new URL("/api/news", API_BASE_URL);
 
@@ -29,6 +30,7 @@ export async function getNews(
 
   url.searchParams.set("limit", String(limit));
   url.searchParams.set("offset", String(offset));
+  url.searchParams.set("sort", sort);
 
   const response = await fetch(url.toString(), {
     cache: "no-store",
@@ -46,9 +48,12 @@ export async function getNews(
 }
 
 export async function getNewsCounts(
-  topics: string[]
+  topics: string[],
+  sort: "latest" | "upvotes" = "latest"
 ): Promise<NewsCountsResponse> {
   const url = new URL("/api/news/counts", API_BASE_URL);
+
+  url.searchParams.set("sort", sort);
 
   topics.forEach((topic) => {
     const cleanedTopic = topic.trim();

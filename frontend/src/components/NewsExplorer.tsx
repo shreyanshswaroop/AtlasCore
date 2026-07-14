@@ -21,6 +21,7 @@ interface NewsExplorerProps {
 
 type ExplorerView = "news" | "leaderboard";
 type NewsLayout = "grid" | "list";
+type NewsRankMode = "latest" | "upvotes";
 
 const skeletonCards = ["a", "b", "c", "d", "e", "f"];
 const leaderboardSkeletonRows = [
@@ -136,6 +137,7 @@ export default function NewsExplorer({
 }: NewsExplorerProps) {
   const [activeView, setActiveView] = useState<ExplorerView>(initialView);
   const [newsLayout, setNewsLayout] = useState<NewsLayout>("grid");
+  const [newsRankMode, setNewsRankMode] = useState<NewsRankMode>("latest");
   const [items, setItems] = useState<NewsItem[]>(initialItems);
   const leaderboardItems = initialLeaderboardItems;
   const [totalResultCount, setTotalResultCount] = useState(initialTotalCount);
@@ -167,7 +169,8 @@ export default function NewsExplorer({
   async function loadNews(
     searchQuery: string | undefined,
     displayLabel: string,
-    topic?: string
+    topic?: string,
+    rankMode: NewsRankMode = newsRankMode
   ) {
     const cleanedQuery = searchQuery?.trim();
 
@@ -182,7 +185,7 @@ export default function NewsExplorer({
       setError("");
       setSearchedQuery(displayLabel);
       const [data] = await Promise.all([
-        getNews(cleanedQuery, itemsPerPage, 0, topic),
+        getNews(cleanedQuery, itemsPerPage, 0, topic, rankMode),
         wait(minimumSkeletonDuration),
       ]);
       setItems(data.items);
@@ -219,7 +222,8 @@ export default function NewsExplorer({
           activeSearchQuery,
           itemsPerPage,
           nextOffset,
-          activeTopic
+          activeTopic,
+          newsRankMode
         ),
         wait(minimumLoadMoreDuration),
       ]);
@@ -249,6 +253,7 @@ export default function NewsExplorer({
     hasMoreItems,
     isLoading,
     isLoadingMore,
+    newsRankMode,
     nextOffset,
   ]);
 
@@ -283,7 +288,7 @@ export default function NewsExplorer({
 
     let isMounted = true;
 
-    getNewsCounts(topicLabels)
+    getNewsCounts(topicLabels, newsRankMode)
       .then((data) => {
         if (!isMounted) {
           return;
@@ -306,31 +311,7 @@ export default function NewsExplorer({
     return () => {
       isMounted = false;
     };
-  }, []);
-
-  useEffect(() => {
-    const loadMoreElement = loadMoreRef.current;
-
-    if (!loadMoreElement || !hasMoreItems) {
-      return;
-    }
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0]?.isIntersecting) {
-          void loadNextPage();
-        }
-      },
-      {
-        rootMargin: "0px",
-        threshold: 0.7,
-      }
-    );
-
-    observer.observe(loadMoreElement);
-
-    return () => observer.disconnect();
-  }, [hasMoreItems, loadNextPage]);
+  }, [newsRankMode]);
 
   async function handleCategoryChange(category: CategoryFilter) {
     setActiveCategory(category.label);
@@ -339,6 +320,22 @@ export default function NewsExplorer({
       category.label === "ALL" ? undefined : category.query,
       category.label,
       category.label === "ALL" ? undefined : category.label
+    );
+  }
+
+  async function handleRankModeChange(rankMode: NewsRankMode) {
+    if (rankMode === newsRankMode) {
+      return;
+    }
+
+    setNewsRankMode(rankMode);
+    setActiveCategory("ALL");
+
+    await loadNews(
+      activeSearchQuery,
+      rankMode === "upvotes" ? "Upvoted" : initialQuery,
+      undefined,
+      rankMode
     );
   }
 
@@ -409,6 +406,7 @@ export default function NewsExplorer({
             onCategoryChange={handleCategoryChange}
             disabled={isLoading}
             loading={isLoading || showNewsSkeleton || showLeaderboardSkeleton}
+            hideEmpty={newsRankMode === "upvotes"}
           />
           <div className="mt-8 hidden border-t border-zinc-800 pt-5 font-mono text-[10px] uppercase leading-5 tracking-[0.12em] text-zinc-700 lg:block">
             <p>Source: AI feeds</p>
@@ -419,11 +417,33 @@ export default function NewsExplorer({
         <div className="min-w-0">
           <div id="trending" className="mb-5 flex flex-col gap-4 border-b border-zinc-800 pb-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <h2 className="font-mono text-[11px] font-normal uppercase tracking-[0.12em] text-zinc-300">
-                {activeView === "leaderboard"
-                  ? "Top companies"
-                  : searchedQuery === "All news" || searchedQuery === "ALL" ? "Latest" : `Results for “${searchedQuery}”`}
-              </h2>
+              {activeView === "leaderboard" ? (
+                <h2 className="font-mono text-[11px] font-normal uppercase tracking-[0.12em] text-zinc-300">
+                  Top companies
+                </h2>
+              ) : searchedQuery === "All news" || searchedQuery === "ALL" || searchedQuery === "Upvoted" ? (
+                <div className="flex items-center gap-5 font-mono text-[11px] uppercase tracking-[0.12em]">
+                  {(["latest", "upvotes"] as NewsRankMode[]).map((rankMode) => (
+                    <button
+                      key={rankMode}
+                      type="button"
+                      disabled={isLoading}
+                      onClick={() => void handleRankModeChange(rankMode)}
+                      className={`pb-1 transition-colors disabled:cursor-wait ${
+                        newsRankMode === rankMode
+                          ? "border-b border-zinc-300 text-zinc-200"
+                          : "text-zinc-600 hover:text-zinc-300"
+                      }`}
+                    >
+                      {rankMode === "latest" ? "Latest" : "Upvoted"}
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <h2 className="font-mono text-[11px] font-normal uppercase tracking-[0.12em] text-zinc-300">
+                  Results for “{searchedQuery}”
+                </h2>
+              )}
             </div>
             <div className="flex flex-wrap items-center gap-4 font-mono text-[11px] uppercase tracking-[0.12em] text-zinc-600">
               <span>
@@ -434,7 +454,11 @@ export default function NewsExplorer({
                   : `${items.length.toString().padStart(2, "0")} / ${totalResultCount} results`}
               </span>
               <span className="border-b border-[#3b82f6] pb-1 text-zinc-300">
-                {activeView === "leaderboard" ? "Catalog" : "Last 30 days"}
+                {activeView === "leaderboard"
+                  ? "Catalog"
+                  : newsRankMode === "upvotes"
+                  ? "Top ranked"
+                  : "Last 30 days"}
               </span>
               {activeView === "news" && (
                 <div className="flex border border-zinc-800 bg-[#0b0b0b]">

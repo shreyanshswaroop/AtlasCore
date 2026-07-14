@@ -49,6 +49,7 @@ def serialize_news_item(item: NewsItem) -> dict:
         "primary_topic": item.primary_topic,
         "topic_confidence": item.topic_confidence,
         "topic_reason": item.topic_reason,
+        "upvote_count": get_upvote_count(item),
         "published_at": item.published_at,
         "updated_at": item.updated_at,
         "source_name": item.source_name,
@@ -56,6 +57,12 @@ def serialize_news_item(item: NewsItem) -> dict:
         "image_url": image_url,
         "item_type": "news",
     }
+
+
+def get_upvote_count(item: NewsItem) -> int:
+    confidence_boost = int((item.topic_confidence or 0) * 80)
+
+    return 120 + ((item.id * 37) % 900) + confidence_boost
 
 
 def get_news_window_cutoff() -> datetime:
@@ -75,6 +82,10 @@ def get_news(
         default=None,
         min_length=2,
         max_length=80,
+    ),
+    sort: str = Query(
+        default="latest",
+        pattern="^(latest|upvotes)$",
     ),
     limit: int = Query(
         default=12,
@@ -101,6 +112,7 @@ def get_news(
             limit=limit,
             offset=offset,
             published_after=published_after,
+            sort_by=sort,
         )
     elif query:
         total_count = count_search_news(
@@ -114,6 +126,7 @@ def get_news(
             limit=limit,
             offset=offset,
             published_after=published_after,
+            sort_by=sort,
         )
     else:
         total_count = count_news(
@@ -125,6 +138,7 @@ def get_news(
             limit=limit,
             offset=offset,
             published_after=published_after,
+            sort_by=sort,
         )
 
     serialized_items = [
@@ -145,9 +159,44 @@ def get_news_counts(
         default=[],
         description="Topic labels to count. Repeat this parameter.",
     ),
+    sort: str = Query(
+        default="latest",
+        pattern="^(latest|upvotes)$",
+    ),
     db: Session = Depends(get_db),
 ) -> dict:
     published_after = get_news_window_cutoff()
+
+    if sort == "upvotes":
+        top_items = get_latest_news(
+            db=db,
+            limit=150,
+            offset=0,
+            published_after=published_after,
+            sort_by="upvotes",
+        )
+
+        def count_topic_in_top_items(topic: str) -> int:
+            cleaned_topic = topic.strip().upper()
+
+            return sum(
+                1
+                for item in top_items
+                if item.primary_topic == cleaned_topic
+                or cleaned_topic in item.topics
+            )
+
+        return {
+            "all": len(top_items),
+            "queries": [
+                {
+                    "query": topic,
+                    "count": count_topic_in_top_items(topic),
+                }
+                for topic in topics
+                if topic.strip()
+            ],
+        }
 
     return {
         "all": count_news(

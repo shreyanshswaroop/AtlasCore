@@ -52,6 +52,7 @@ def get_latest_news(
     limit: int,
     offset: int,
     published_after: datetime | None = None,
+    sort_by: str = "latest",
 ) -> Sequence[NewsItem]:
     statement = select(NewsItem)
 
@@ -59,7 +60,7 @@ def get_latest_news(
         statement = statement.where(NewsItem.published_at >= published_after)
 
     statement = (
-        statement.order_by(desc(NewsItem.published_at))
+        apply_news_order(statement, sort_by)
         .offset(offset)
         .limit(limit)
     )
@@ -73,6 +74,7 @@ def search_news(
     limit: int,
     offset: int,
     published_after: datetime | None = None,
+    sort_by: str = "latest",
 ) -> Sequence[NewsItem]:
     statement = select(NewsItem).where(build_news_search_condition(query))
 
@@ -80,7 +82,7 @@ def search_news(
         statement = statement.where(NewsItem.published_at >= published_after)
 
     statement = (
-        statement.order_by(desc(NewsItem.published_at))
+        apply_news_order(statement, sort_by)
         .offset(offset)
         .limit(limit)
     )
@@ -94,6 +96,7 @@ def get_news_by_topic(
     limit: int,
     offset: int,
     published_after: datetime | None = None,
+    sort_by: str = "latest",
 ) -> Sequence[NewsItem]:
     statement = select(NewsItem).where(build_topic_condition(topic))
 
@@ -101,7 +104,7 @@ def get_news_by_topic(
         statement = statement.where(NewsItem.published_at >= published_after)
 
     statement = (
-        statement.order_by(desc(NewsItem.published_at))
+        apply_news_order(statement, sort_by)
         .offset(offset)
         .limit(limit)
     )
@@ -198,3 +201,21 @@ def build_news_search_condition(query: str):
         )
 
     return or_(*conditions)
+
+
+def build_upvote_score_expression():
+    return (
+        120
+        + ((NewsItem.id * 37) % 900)
+        + (func.coalesce(NewsItem.topic_confidence, 0) * 80)
+    )
+
+
+def apply_news_order(statement, sort_by: str):
+    if sort_by == "upvotes":
+        return statement.order_by(
+            desc(build_upvote_score_expression()),
+            desc(NewsItem.published_at),
+        )
+
+    return statement.order_by(desc(NewsItem.published_at))

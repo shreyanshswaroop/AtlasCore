@@ -7,9 +7,6 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     database_url: str
-    atlascore_auto_sync_enabled: bool = True
-    atlascore_auto_sync_on_startup: bool = True
-    atlascore_auto_sync_interval_minutes: int = 360
     atlascore_sync_topics: str = ""
     atlascore_sync_max_results_per_topic: int = 50
     atlascore_news_fetch_og_images: bool = True
@@ -24,8 +21,6 @@ class Settings(BaseSettings):
     smtp_use_tls: bool = True
 
     @field_validator(
-        "atlascore_auto_sync_enabled",
-        "atlascore_auto_sync_on_startup",
         "atlascore_news_fetch_og_images",
         "atlascore_sync_email_enabled",
         "smtp_use_tls",

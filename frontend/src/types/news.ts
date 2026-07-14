@@ -13,6 +13,7 @@ export type NewsItem = {
   primary_topic?: string | null;
   topic_confidence?: number | null;
   topic_reason?: string | null;
+  upvote_count?: number;
 };
 
 export type NewsResponse = {
