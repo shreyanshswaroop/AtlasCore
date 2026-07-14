@@ -4,7 +4,7 @@ import AtlasCoreLogo from "./AtlasCoreLogo";
 
 const navigationItems = [
   { label: "Explore", href: "/#discover" },
-  { label: "Latest", href: "/#trending" },
+  { label: "Leaderboard", href: "/?view=leaderboard#discover" },
   { label: "About", href: "/#about" },
 ];
 
@@ -37,7 +37,7 @@ export default function Navbar() {
           href="/#discover"
           className="border border-zinc-700 px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.12em] text-zinc-300 hover:border-[#3b82f6] hover:text-white"
         >
-          Browse papers
+          Browse news
         </Link>
       </nav>
     </header>

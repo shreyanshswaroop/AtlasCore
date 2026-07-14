@@ -1,13 +1,40 @@
+import asyncio
+from contextlib import asynccontextmanager, suppress
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.papers import router as papers_router
+from app.api.companies import router as companies_router
+from app.api.news import router as news_router
+from app.api.sync import router as sync_router
+from app.core.config import get_settings
+from app.services.scheduler_service import auto_sync_loop
+
+
+settings = get_settings()
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    sync_task: asyncio.Task | None = None
+
+    if settings.atlascore_auto_sync_enabled:
+        sync_task = asyncio.create_task(auto_sync_loop())
+
+    yield
+
+    if sync_task is not None:
+        sync_task.cancel()
+
+        with suppress(asyncio.CancelledError):
+            await sync_task
 
 
 app = FastAPI(
     title="AtlasCore API",
     description="AI research intelligence and discovery platform",
     version="0.1.0",
+    lifespan=lifespan,
 )
 
 app.add_middleware(
@@ -18,7 +45,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(papers_router)
+app.include_router(companies_router)
+app.include_router(news_router)
+app.include_router(sync_router)
 
 
 @app.get("/")

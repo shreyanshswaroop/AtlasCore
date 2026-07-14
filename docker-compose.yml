@@ -1,29 +1,29 @@
 services:
   postgres:
     image: postgres:17
-    container_name: neuralscope-postgres
+    container_name: atlascore-postgres
     restart: unless-stopped
 
     environment:
-      POSTGRES_DB: neuralscope
-      POSTGRES_USER: neuralscope
-      POSTGRES_PASSWORD: neuralscope_password
+      POSTGRES_DB: atlascore
+      POSTGRES_USER: atlascore
+      POSTGRES_PASSWORD: atlascore_password
 
     ports:
       - "5432:5432"
 
     volumes:
-      - neuralscope_postgres_data:/var/lib/postgresql/data
+      - atlascore_postgres_data:/var/lib/postgresql/data
 
     healthcheck:
       test:
         [
           "CMD-SHELL",
-          "pg_isready -U neuralscope -d neuralscope"
+          "pg_isready -U atlascore -d atlascore"
         ]
       interval: 5s
       timeout: 5s
       retries: 5
 
 volumes:
-  neuralscope_postgres_data:
+  atlascore_postgres_data:

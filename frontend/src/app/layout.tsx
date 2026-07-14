@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "AtlasCore — AI Research Index",
-  description: "Discover the latest artificial intelligence research from arXiv.",
+  title: "AtlasCore — AI News Index",
+  description: "Discover AI news from the last 30 days.",
 };
 
 export default function RootLayout({

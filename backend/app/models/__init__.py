@@ -1,7 +1,5 @@
-from app.models.paper import Paper
-from app.models.paper_ai_analysis import PaperAIAnalysis
+from app.models.news_item import NewsItem
 
 __all__ = [
-    "Paper",
-    "PaperAIAnalysis",
+    "NewsItem",
 ]
