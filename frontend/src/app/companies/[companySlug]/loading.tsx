@@ -43,7 +43,7 @@ export default function CompanyLoading() {
 
       <section
         aria-label="Loading company profile"
-        className="mx-auto max-w-[1500px] px-5 py-10 sm:px-8 sm:py-14"
+        className="news-layout-enter mx-auto max-w-[1500px] px-5 py-10 sm:px-8 sm:py-14"
       >
         <div className="mb-10 flex items-center gap-3">
           <span className="skeleton-shimmer h-3 w-24" />

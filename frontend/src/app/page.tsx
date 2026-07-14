@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import Navbar from "@/components/Navbar";
 import NewsExplorer from "@/components/NewsExplorer";
 import { getCompanyLeaderboard, getNews } from "@/lib/api";
@@ -57,7 +59,12 @@ export default async function Home({ searchParams }: HomeProps) {
       <footer id="about" className="border-t border-white/10">
         <div className="mx-auto flex max-w-[1500px] flex-col gap-2 px-5 py-8 font-mono text-xs uppercase tracking-[0.12em] text-zinc-600 sm:flex-row sm:justify-between sm:px-8">
           <p>© 2026 AtlasCore AI</p>
-          <p>Research signals, without the noise.</p>
+          <div className="flex flex-wrap gap-4 sm:justify-end">
+            <Link href="/about" className="hover:text-zinc-300">
+              About
+            </Link>
+            <p>Research signals, without the noise.</p>
+          </div>
         </div>
       </footer>
     </main>

@@ -112,6 +112,27 @@ a {
   animation: news-layout-enter 240ms ease-out both;
 }
 
+.faded-divider {
+  position: relative;
+}
+
+.faded-divider::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(63, 63, 70, 0.58) 12%,
+    rgba(63, 63, 70, 0.58) 88%,
+    transparent
+  );
+  pointer-events: none;
+}
+
 @keyframes skeleton-shimmer {
   0% {
     background-position: 120% 0;

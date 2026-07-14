@@ -3,6 +3,7 @@ interface CategoryFiltersProps {
   onCategoryChange: (category: CategoryFilter) => void;
   counts?: Record<string, number>;
   disabled?: boolean;
+  loading?: boolean;
 }
 
 export type CategoryFilter = {
@@ -243,12 +244,60 @@ function ChevronIcon() {
   );
 }
 
+const skeletonRows = [
+  "all",
+  "agents",
+  "api",
+  "audio",
+  "benchmarks",
+  "business",
+  "data",
+  "development",
+  "government",
+  "gpus",
+  "image",
+  "infra",
+];
+
+function CategoryFiltersSkeleton() {
+  return (
+    <div
+      role="status"
+      aria-label="Loading topics"
+      className="flex gap-2 overflow-x-auto pb-2 lg:block lg:max-h-[620px] lg:space-y-0.5 lg:overflow-y-hidden lg:overflow-x-hidden lg:pb-0 lg:pr-1"
+    >
+      <span className="sr-only">Loading topics</span>
+      {skeletonRows.map((row, index) => (
+        <div
+          key={row}
+          className="flex min-w-[150px] items-center justify-between gap-3 border border-transparent px-3 py-2.5 lg:w-full lg:min-w-0"
+        >
+          <span className="flex min-w-0 items-center gap-2.5">
+            <span className="skeleton-shimmer h-1.5 w-1.5" />
+            <span className="skeleton-shimmer h-5 w-5 shrink-0" />
+            <span
+              className="skeleton-shimmer h-3"
+              style={{ width: `${Math.max(52, 96 - index * 3)}px` }}
+            />
+          </span>
+          <span className="skeleton-shimmer h-3 w-8 shrink-0" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function CategoryFilters({
   activeCategory,
   onCategoryChange,
   counts,
   disabled = false,
+  loading = false,
 }: CategoryFiltersProps) {
+  if (loading) {
+    return <CategoryFiltersSkeleton />;
+  }
+
   return (
     <div className="flex gap-2 overflow-x-auto pb-2 lg:block lg:max-h-[620px] lg:space-y-0.5 lg:overflow-y-auto lg:overflow-x-hidden lg:pb-0 lg:pr-1">
       {categories.map((category) => {

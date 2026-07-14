@@ -10,9 +10,8 @@ import type { NewsItem } from "@/types/news";
 import AtlasCoreLogo from "./AtlasCoreLogo";
 
 const navigationItems = [
-  { label: "Explore", href: "/#discover" },
-  { label: "Leaderboard", href: "/?view=leaderboard#discover" },
-  { label: "About", href: "/#about" },
+  { label: "Explore", href: "/" },
+  { label: "Leaderboard", href: "/?view=leaderboard" },
 ];
 
 function escapeRegExp(value: string) {

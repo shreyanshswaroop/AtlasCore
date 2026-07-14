@@ -93,11 +93,11 @@ function LeaderboardSkeleton() {
     <div
       role="status"
       aria-label="Loading company leaderboard"
-      className="border border-zinc-800"
+      className=""
     >
       <span className="sr-only">Loading company leaderboard</span>
 
-      <div className="grid grid-cols-[70px_minmax(0,1fr)] border-b border-zinc-800 px-4 py-3 font-mono text-[10px] uppercase tracking-[0.14em] text-zinc-500 sm:grid-cols-[90px_minmax(0,1fr)_minmax(180px,360px)]">
+      <div className="faded-divider grid grid-cols-[70px_minmax(0,1fr)] px-4 py-3 font-mono text-[10px] uppercase tracking-[0.14em] text-zinc-500 sm:grid-cols-[90px_minmax(0,1fr)_minmax(180px,360px)]">
         <span>Rank</span>
         <span>Company</span>
         <span className="hidden sm:block">Products</span>
@@ -106,7 +106,7 @@ function LeaderboardSkeleton() {
       {leaderboardSkeletonRows.map((row, index) => (
         <div
           key={row}
-          className="grid min-h-16 grid-cols-[70px_minmax(0,1fr)] items-center border-b border-zinc-900 px-4 py-3 last:border-b-0 sm:grid-cols-[90px_minmax(0,1fr)_minmax(180px,360px)]"
+          className="faded-divider grid min-h-16 grid-cols-[70px_minmax(0,1fr)] items-center px-4 py-3 last:after:hidden sm:grid-cols-[90px_minmax(0,1fr)_minmax(180px,360px)]"
         >
           <span className="skeleton-shimmer h-4 w-9" />
 
@@ -155,6 +155,9 @@ export default function NewsExplorer({
   const [showLeaderboardSkeleton, setShowLeaderboardSkeleton] = useState(
     initialView === "leaderboard"
   );
+  const [showNewsSkeleton, setShowNewsSkeleton] = useState(
+    initialView === "news"
+  );
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [error, setError] = useState("");
@@ -168,8 +171,8 @@ export default function NewsExplorer({
   ) {
     const cleanedQuery = searchQuery?.trim();
 
-    if (cleanedQuery !== undefined && cleanedQuery.length < 2) {
-      setError("Enter at least two characters.");
+    if (cleanedQuery !== undefined && cleanedQuery.length < 1) {
+      setError("Enter at least one character.");
       return;
     }
 
@@ -262,6 +265,18 @@ export default function NewsExplorer({
   }, [showLeaderboardSkeleton]);
 
   useEffect(() => {
+    if (!showNewsSkeleton) {
+      return;
+    }
+
+    const timeout = window.setTimeout(() => {
+      setShowNewsSkeleton(false);
+    }, minimumSkeletonDuration);
+
+    return () => window.clearTimeout(timeout);
+  }, [showNewsSkeleton]);
+
+  useEffect(() => {
     const topicLabels = categories
       .filter((category) => category.label !== "ALL")
       .map((category) => category.label);
@@ -338,8 +353,8 @@ export default function NewsExplorer({
     }
 
     return (
-      <div className="border border-zinc-800">
-        <div className="grid grid-cols-[70px_minmax(0,1fr)] border-b border-zinc-800 px-4 py-3 font-mono text-[10px] uppercase tracking-[0.14em] text-zinc-500 sm:grid-cols-[90px_minmax(0,1fr)_minmax(180px,360px)]">
+      <div>
+        <div className="faded-divider grid grid-cols-[70px_minmax(0,1fr)] px-4 py-3 font-mono text-[10px] uppercase tracking-[0.14em] text-zinc-500 sm:grid-cols-[90px_minmax(0,1fr)_minmax(180px,360px)]">
           <span>Rank</span>
           <span>Company</span>
           <span className="hidden sm:block">Products</span>
@@ -349,7 +364,7 @@ export default function NewsExplorer({
           <Link
             key={item.company}
             href={`/companies/${item.slug}`}
-            className="grid min-h-16 grid-cols-[70px_minmax(0,1fr)] items-center border-b border-zinc-900 px-4 py-3 last:border-b-0 sm:grid-cols-[90px_minmax(0,1fr)_minmax(180px,360px)]"
+            className="faded-divider grid min-h-16 grid-cols-[70px_minmax(0,1fr)] items-center px-4 py-3 last:after:hidden sm:grid-cols-[90px_minmax(0,1fr)_minmax(180px,360px)]"
           >
             <span className="font-mono text-sm text-zinc-500">
               #{item.rank}
@@ -388,7 +403,13 @@ export default function NewsExplorer({
       <div className="grid gap-8 lg:grid-cols-[270px_minmax(0,1fr)]">
         <aside>
           <p className="mb-4 font-mono text-[11px] uppercase tracking-[0.18em] text-zinc-600">Topics</p>
-          <CategoryFilters activeCategory={activeCategory} counts={categoryCounts} onCategoryChange={handleCategoryChange} disabled={isLoading} />
+          <CategoryFilters
+            activeCategory={activeCategory}
+            counts={categoryCounts}
+            onCategoryChange={handleCategoryChange}
+            disabled={isLoading}
+            loading={isLoading || showNewsSkeleton || showLeaderboardSkeleton}
+          />
           <div className="mt-8 hidden border-t border-zinc-800 pt-5 font-mono text-[10px] uppercase leading-5 tracking-[0.12em] text-zinc-700 lg:block">
             <p>Source: AI feeds</p>
             <p>Index status: live</p>
@@ -408,7 +429,7 @@ export default function NewsExplorer({
               <span>
                 {activeView === "leaderboard"
                   ? `${leaderboardItems.length.toString().padStart(2, "0")} companies`
-                  : isLoading
+                  : isLoading || showNewsSkeleton
                   ? "Scanning index"
                   : `${items.length.toString().padStart(2, "0")} / ${totalResultCount} results`}
               </span>
@@ -453,7 +474,7 @@ export default function NewsExplorer({
 
           {activeView === "leaderboard" ? (
             showLeaderboardSkeleton ? <LeaderboardSkeleton /> : renderLeaderboard()
-          ) : isLoading ? (
+          ) : isLoading || showNewsSkeleton ? (
             <div
               role="status"
               aria-label={`Loading news for ${searchedQuery}`}

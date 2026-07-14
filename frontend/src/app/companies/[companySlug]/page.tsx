@@ -223,7 +223,7 @@ export default async function CompanyPage({ params }: CompanyPageProps) {
     <main className="min-h-screen bg-[#080808] text-zinc-100">
       <Navbar />
 
-      <section className="mx-auto max-w-[1500px] px-5 py-10 sm:px-8 sm:py-14">
+      <section className="news-layout-enter mx-auto max-w-[1500px] px-5 py-10 sm:px-8 sm:py-14">
         <div className="mb-10 flex flex-wrap items-center gap-3 font-mono text-[10px] uppercase tracking-[0.14em] text-zinc-500">
           <Link href="/?view=leaderboard#discover" className="hover:text-white">
             Leaderboard
