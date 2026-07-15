@@ -4,7 +4,6 @@ import { FormEvent, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-import AtlasCoreLogo from "@/components/AtlasCoreLogo";
 import { signin } from "@/lib/api";
 
 export default function SignInPage() {
@@ -40,7 +39,6 @@ export default function SignInPage() {
           className="mb-8 inline-flex items-center gap-3 text-white"
           aria-label="Back to AtlasCore"
         >
-          <AtlasCoreLogo className="h-8 w-8" />
           <span className="font-mono text-xs font-bold uppercase tracking-[0.16em] text-zinc-300">
             AtlasCore
           </span>

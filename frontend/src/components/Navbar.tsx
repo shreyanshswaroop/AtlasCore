@@ -14,7 +14,6 @@ import type { CompanyLeaderboardItem } from "@/types/company";
 import type { NewsItem } from "@/types/news";
 
 import AuthModal from "./AuthModal";
-import AtlasCoreLogo from "./AtlasCoreLogo";
 
 type AuthMode = "signin" | "signup";
 
@@ -202,7 +201,6 @@ export default function Navbar() {
       <nav className="flex h-14 w-full items-center gap-4 px-3 sm:px-4">
         <div className="flex items-center gap-8">
           <Link href="/" className="flex items-center gap-2.5 text-white">
-            <AtlasCoreLogo />
             <span className="font-mono text-base font-medium uppercase leading-6 tracking-[0.08em]">
               AtlasCore
             </span>
