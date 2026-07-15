@@ -670,8 +670,6 @@ export default function NewsExplorer({
             visibleLabels={preferredTopicLabels}
           />
           <div className="mt-8 hidden border-t border-zinc-800 pt-5 font-mono text-[10px] uppercase leading-5 tracking-[0.12em] text-zinc-700 lg:block">
-            <p>Source: AI feeds</p>
-            <p>Index status: {syncStatus?.is_running ? "syncing" : "live"}</p>
             <p className="normal-case tracking-normal text-zinc-500">
               {syncStatusLabel}
             </p>
