@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from email.utils import parsedate_to_datetime
 import re
-from threading import Lock, Thread
+from threading import Lock
 from urllib.parse import urlencode, urlparse
 import xml.etree.ElementTree as ET
 
@@ -52,7 +52,7 @@ class RankingSignal:
 
 _company_ranking_lock = Lock()
 _company_ranking_cache: tuple[datetime, list[RankedCompany]] | None = None
-_startup_refresh_lock = Lock()
+_leaderboard_snapshot_refresh_lock = Lock()
 
 
 def get_ranked_companies() -> tuple[list[RankedCompany], str]:
@@ -151,35 +151,14 @@ def refresh_company_leaderboard_snapshot_if_stale() -> bool:
     if calculated_at is not None and calculated_at > stale_after:
         return False
 
-    if not _startup_refresh_lock.acquire(blocking=False):
+    if not _leaderboard_snapshot_refresh_lock.acquire(blocking=False):
         return False
 
     try:
         refresh_company_leaderboard_snapshot()
         return True
     finally:
-        _startup_refresh_lock.release()
-
-
-def schedule_company_leaderboard_startup_refresh() -> None:
-    if (
-        not settings.atlascore_company_ranking_enabled
-        or not settings.atlascore_company_ranking_refresh_on_startup
-    ):
-        return
-
-    thread = Thread(
-        target=run_company_leaderboard_startup_refresh,
-        daemon=True,
-    )
-    thread.start()
-
-
-def run_company_leaderboard_startup_refresh() -> None:
-    try:
-        refresh_company_leaderboard_snapshot_if_stale()
-    except Exception:
-        return
+        _leaderboard_snapshot_refresh_lock.release()
 
 
 def get_cached_rankings(

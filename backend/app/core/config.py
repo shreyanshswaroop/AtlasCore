@@ -15,7 +15,6 @@ class Settings(BaseSettings):
     atlascore_company_ranking_timespan: str = "7d"
     atlascore_company_ranking_cache_seconds: int = 1800
     atlascore_company_ranking_max_companies: int = 150
-    atlascore_company_ranking_refresh_on_startup: bool = True
     atlascore_company_ranking_stale_hours: int = 6
     atlascore_sync_email_enabled: bool = False
     atlascore_sync_email_to: str | None = None
@@ -28,11 +27,11 @@ class Settings(BaseSettings):
     auth_secret_key: str = "atlascore-dev-auth-secret-change-me"
     auth_token_expire_minutes: int = 60 * 24 * 7
     auth_cookie_secure: bool = False
+    cron_secret: str | None = None
 
     @field_validator(
         "atlascore_news_fetch_og_images",
         "atlascore_company_ranking_enabled",
-        "atlascore_company_ranking_refresh_on_startup",
         "atlascore_sync_email_enabled",
         "smtp_use_tls",
         "auth_cookie_secure",
