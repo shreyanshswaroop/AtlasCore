@@ -1,7 +1,7 @@
 """create news items table
 
 Revision ID: a1d2f4f1c9a0
-Revises: 58878ec6bf3d
+Revises:
 Create Date: 2026-07-14 00:30:00.000000
 """
 
@@ -13,7 +13,7 @@ from sqlalchemy.dialects import postgresql
 
 
 revision: str = "a1d2f4f1c9a0"
-down_revision: Union[str, Sequence[str], None] = "58878ec6bf3d"
+down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
