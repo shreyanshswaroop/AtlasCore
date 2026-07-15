@@ -3,6 +3,7 @@ from datetime import datetime, timedelta, timezone
 from email.utils import parsedate_to_datetime
 from html.parser import HTMLParser
 import re
+from difflib import SequenceMatcher
 from urllib.parse import urljoin, urlparse
 
 import feedparser
@@ -12,11 +13,52 @@ from sqlalchemy.orm import Session
 from app.core.config import get_settings
 from app.core.news_source_catalog import NEWS_SOURCES, NewsSource
 from app.core.topic_catalog import TOPIC_DEFINITIONS
-from app.repositories.news_repository import upsert_news_item
+from app.repositories.news_repository import (
+    get_news_by_external_id,
+    get_recent_news_duplicate_candidates,
+    upsert_news_item,
+)
 from app.services.news_topic_classifier import classify_news_item
 
 
 settings = get_settings()
+near_duplicate_title_similarity_threshold = 0.92
+near_duplicate_token_overlap_threshold = 0.84
+minimum_duplicate_title_tokens = 5
+title_suffix_pattern = re.compile(
+    r"\s+[-|:]\s+("
+    r"openai|google ai|google deepmind|deepmind|hugging face|github|"
+    r"nvidia|mistral ai|the decoder|techcrunch|venturebeat|"
+    r"mit technology review|berkeley bair|aws machine learning|"
+    r"microsoft research|together ai"
+    r")\s*$",
+    flags=re.IGNORECASE,
+)
+title_noise_tokens = {
+    "a",
+    "an",
+    "and",
+    "are",
+    "as",
+    "at",
+    "be",
+    "by",
+    "for",
+    "from",
+    "how",
+    "in",
+    "into",
+    "is",
+    "it",
+    "its",
+    "new",
+    "of",
+    "on",
+    "or",
+    "the",
+    "to",
+    "with",
+}
 
 
 @dataclass
@@ -68,6 +110,12 @@ def ingest_news(
     published_after = datetime.now(timezone.utc) - timedelta(
         days=settings.atlascore_news_window_days,
     )
+    duplicate_title_index = build_duplicate_title_index(
+        get_recent_news_duplicate_candidates(
+            db=db,
+            published_after=published_after,
+        )
+    )
 
     try:
         for source in NEWS_SOURCES:
@@ -87,13 +135,26 @@ def ingest_news(
                     if published_at < published_after:
                         continue
 
+                    item_data = build_news_item_data(
+                        source=source,
+                        entry=entry,
+                        published_at=published_at,
+                    )
+
+                    if is_duplicate_news_item(
+                        db=db,
+                        item_data=item_data,
+                        duplicate_title_index=duplicate_title_index,
+                    ):
+                        continue
+
                     upsert_news_item(
                         db=db,
-                        item_data=build_news_item_data(
-                            source=source,
-                            entry=entry,
-                            published_at=published_at,
-                        ),
+                        item_data=item_data,
+                    )
+                    add_title_to_duplicate_index(
+                        duplicate_title_index,
+                        item_data["title"],
                     )
                     processed += 1
                 except Exception:
@@ -109,6 +170,93 @@ def ingest_news(
         processed=processed,
         failed=failed,
     )
+
+
+def build_duplicate_title_index(news_items) -> list[tuple[str, frozenset[str]]]:
+    return [
+        title_signature(item.title)
+        for item in news_items
+        if item.title
+    ]
+
+
+def add_title_to_duplicate_index(
+    duplicate_title_index: list[tuple[str, frozenset[str]]],
+    title: str,
+) -> None:
+    duplicate_title_index.append(title_signature(title))
+
+
+def is_duplicate_news_item(
+    db: Session,
+    item_data: dict,
+    duplicate_title_index: list[tuple[str, frozenset[str]]],
+) -> bool:
+    if get_news_by_external_id(db, item_data["external_id"]) is not None:
+        return False
+
+    incoming_signature = title_signature(item_data["title"])
+
+    return any(
+        is_duplicate_title_signature(incoming_signature, existing_signature)
+        for existing_signature in duplicate_title_index
+    )
+
+
+def title_signature(title: str) -> tuple[str, frozenset[str]]:
+    normalized_title = normalize_news_title(title)
+
+    return normalized_title, frozenset(
+        token
+        for token in normalized_title.split()
+        if token not in title_noise_tokens
+    )
+
+
+def normalize_news_title(title: str) -> str:
+    normalized_title = clean_html(title).lower()
+    normalized_title = title_suffix_pattern.sub("", normalized_title)
+    normalized_title = re.sub(r"https?://\S+", " ", normalized_title)
+    normalized_title = re.sub(r"[^\w\s]", " ", normalized_title)
+    normalized_title = re.sub(r"\s+", " ", normalized_title)
+
+    return normalized_title.strip()
+
+
+def is_duplicate_title_signature(
+    incoming_signature: tuple[str, frozenset[str]],
+    existing_signature: tuple[str, frozenset[str]],
+) -> bool:
+    incoming_title, incoming_tokens = incoming_signature
+    existing_title, existing_tokens = existing_signature
+
+    if not incoming_title or not existing_title:
+        return False
+
+    if incoming_title == existing_title:
+        return True
+
+    if (
+        len(incoming_tokens) < minimum_duplicate_title_tokens
+        or len(existing_tokens) < minimum_duplicate_title_tokens
+    ):
+        return False
+
+    token_overlap = len(incoming_tokens & existing_tokens) / max(
+        len(incoming_tokens),
+        len(existing_tokens),
+    )
+
+    if token_overlap < near_duplicate_token_overlap_threshold:
+        return False
+
+    title_similarity = SequenceMatcher(
+        None,
+        incoming_title,
+        existing_title,
+    ).ratio()
+
+    return title_similarity >= near_duplicate_title_similarity_threshold
 
 
 def fetch_feed(feed_url: str):

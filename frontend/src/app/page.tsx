@@ -2,7 +2,7 @@ import Link from "next/link";
 
 import Navbar from "@/components/Navbar";
 import NewsExplorer from "@/components/NewsExplorer";
-import { getCompanyLeaderboard, getNews } from "@/lib/api";
+import { getNews, getSyncStatus } from "@/lib/api";
 import { Newsreader } from "next/font/google";
 
 const headlineSerif = Newsreader({
@@ -22,9 +22,13 @@ export default async function Home({ searchParams }: HomeProps) {
   const initialView =
     resolvedSearchParams?.view === "leaderboard" ? "leaderboard" : "news";
   const initialQuery = resolvedSearchParams?.query?.trim() || "All news";
-  const [data, leaderboard] = await Promise.all([
+  const [data, syncStatus] = await Promise.all([
     getNews(initialQuery === "All news" ? undefined : initialQuery, 12),
-    getCompanyLeaderboard(150),
+    getSyncStatus().catch((error) => {
+      console.error(error);
+
+      return null;
+    }),
   ]);
 
   return (
@@ -53,7 +57,7 @@ export default async function Home({ searchParams }: HomeProps) {
         initialQuery={initialQuery}
         initialTotalCount={data.count}
         initialView={initialView}
-        initialLeaderboardItems={leaderboard.items}
+        initialSyncStatus={syncStatus}
       />
 
       <footer id="about" className="border-t border-white/10">

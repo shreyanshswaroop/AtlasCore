@@ -6,6 +6,8 @@ import type {
   NewsCountsResponse,
   NewsDetailResponse,
   NewsResponse,
+  NewsSyncStatus,
+  TrendingTopicsResponse,
 } from "@/types/news";
 
 const API_BASE_URL =
@@ -78,6 +80,28 @@ export async function getNewsCounts(
   return response.json() as Promise<NewsCountsResponse>;
 }
 
+export async function getTrendingTopics(
+  limit = 8
+): Promise<TrendingTopicsResponse> {
+  const url = new URL("/api/news/trending-topics", API_BASE_URL);
+
+  url.searchParams.set("limit", String(limit));
+
+  const response = await fetch(url.toString(), {
+    cache: "no-store",
+  });
+
+  if (!response.ok) {
+    const errorMessage = await response.text();
+
+    throw new Error(
+      errorMessage || `Failed to fetch trending topics: ${response.status}`
+    );
+  }
+
+  return response.json() as Promise<TrendingTopicsResponse>;
+}
+
 export async function getNewsById(
   newsId: string
 ): Promise<NewsDetailResponse> {
@@ -99,12 +123,28 @@ export async function getNewsById(
   return response.json() as Promise<NewsDetailResponse>;
 }
 
+export async function getSyncStatus(): Promise<NewsSyncStatus> {
+  const response = await fetch(`${API_BASE_URL}/api/sync`, {
+    cache: "no-store",
+  });
+
+  if (!response.ok) {
+    throw new Error(
+      `Failed to fetch sync status: ${response.status}`
+    );
+  }
+
+  return response.json() as Promise<NewsSyncStatus>;
+}
+
 export async function getCompanyLeaderboard(
-  limit = 150
+  limit = 150,
+  globalRank = true
 ): Promise<CompanyLeaderboardResponse> {
   const url = new URL("/api/companies/leaderboard", API_BASE_URL);
 
   url.searchParams.set("limit", String(limit));
+  url.searchParams.set("global_rank", String(globalRank));
 
   const response = await fetch(url.toString(), {
     cache: "no-store",

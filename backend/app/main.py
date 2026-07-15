@@ -7,6 +7,9 @@ from app.api.companies import router as companies_router
 from app.api.news import router as news_router
 from app.api.sync import router as sync_router
 from app.core.config import get_settings
+from app.services.company_ranking_service import (
+    schedule_company_leaderboard_startup_refresh,
+)
 
 
 settings = get_settings()
@@ -35,6 +38,11 @@ app.add_middleware(
 app.include_router(companies_router)
 app.include_router(news_router)
 app.include_router(sync_router)
+
+
+@app.on_event("startup")
+def startup_tasks() -> None:
+    schedule_company_leaderboard_startup_refresh()
 
 
 @app.get("/")

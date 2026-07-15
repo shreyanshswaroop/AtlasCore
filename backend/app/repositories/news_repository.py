@@ -47,6 +47,27 @@ def upsert_news_item(
     return db.execute(statement).scalar_one()
 
 
+def get_news_by_external_id(
+    db: Session,
+    external_id: str,
+) -> NewsItem | None:
+    statement = select(NewsItem).where(NewsItem.external_id == external_id)
+
+    return db.scalar(statement)
+
+
+def get_recent_news_duplicate_candidates(
+    db: Session,
+    published_after: datetime | None = None,
+) -> Sequence[NewsItem]:
+    statement = select(NewsItem)
+
+    if published_after is not None:
+        statement = statement.where(NewsItem.published_at >= published_after)
+
+    return db.scalars(statement).all()
+
+
 def get_latest_news(
     db: Session,
     limit: int,
@@ -165,6 +186,30 @@ def count_news_by_topic(
         statement = statement.where(NewsItem.published_at >= published_after)
 
     return db.scalar(statement) or 0
+
+
+def get_trending_topic_counts(
+    db: Session,
+    published_after: datetime | None = None,
+) -> list[tuple[str, int, datetime | None]]:
+    statement = (
+        select(
+            NewsItem.primary_topic,
+            func.count(NewsItem.id),
+            func.max(NewsItem.published_at),
+        )
+        .where(NewsItem.primary_topic.is_not(None))
+        .group_by(NewsItem.primary_topic)
+    )
+
+    if published_after is not None:
+        statement = statement.where(NewsItem.published_at >= published_after)
+
+    return [
+        (topic, count, latest_published_at)
+        for topic, count, latest_published_at in db.execute(statement).all()
+        if topic
+    ]
 
 
 def build_topic_condition(topic: str):

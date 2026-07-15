@@ -5,10 +5,13 @@ export type CompanyLeaderboardItem = {
   aliases: string[];
   domain?: string | null;
   logo_url?: string | null;
+  global_mentions?: number;
+  importance_score?: number;
+  rank_basis?: string;
 };
 
 export type CompanyLeaderboardResponse = {
-  source: "company_catalog";
+  source: string;
   count: number;
   items: CompanyLeaderboardItem[];
 };

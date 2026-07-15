@@ -2,9 +2,15 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { getNews, getNewsCounts } from "@/lib/api";
+import {
+  getCompanyLeaderboard,
+  getNews,
+  getNewsCounts,
+  getSyncStatus,
+  getTrendingTopics,
+} from "@/lib/api";
 import type { CompanyLeaderboardItem } from "@/types/company";
-import type { NewsItem } from "@/types/news";
+import type { NewsItem, NewsSyncStatus } from "@/types/news";
 import CategoryFilters, {
   categories,
   type CategoryFilter,
@@ -16,12 +22,12 @@ interface NewsExplorerProps {
   initialQuery: string;
   initialTotalCount: number;
   initialView?: ExplorerView;
-  initialLeaderboardItems: CompanyLeaderboardItem[];
+  initialSyncStatus: NewsSyncStatus | null;
 }
 
 type ExplorerView = "news" | "leaderboard";
 type NewsLayout = "grid" | "list";
-type NewsRankMode = "latest" | "upvotes";
+type NewsRankMode = "latest" | "trending";
 
 const skeletonCards = ["a", "b", "c", "d", "e", "f"];
 const leaderboardSkeletonRows = [
@@ -39,6 +45,21 @@ const leaderboardSkeletonRows = [
 const minimumSkeletonDuration = 900;
 const minimumLoadMoreDuration = 2500;
 const itemsPerPage = 12;
+const syncStatusRefreshInterval = 60_000;
+const monthLabels = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+];
 
 function wait(milliseconds: number) {
   return new Promise((resolve) => setTimeout(resolve, milliseconds));
@@ -51,6 +72,59 @@ function getCompanyInitials(company: string) {
     .slice(0, 2)
     .map((part) => part[0]?.toUpperCase())
     .join("");
+}
+
+function formatCompanyAliases(item: CompanyLeaderboardItem) {
+  return item.aliases.slice(0, 4).join(" / ");
+}
+
+function hasCompanyAliases(item: CompanyLeaderboardItem) {
+  return item.aliases.length > 0;
+}
+
+function formatLastSyncAt(syncStatus: NewsSyncStatus | null) {
+  const syncTime =
+    syncStatus?.last_sync?.finished_at ?? syncStatus?.last_sync?.started_at;
+
+  if (!syncTime) {
+    return "";
+  }
+
+  const date = new Date(syncTime);
+  const indiaTime = new Date(date.getTime() + 5.5 * 60 * 60 * 1000);
+  const day = String(indiaTime.getUTCDate()).padStart(2, "0");
+  const month = monthLabels[indiaTime.getUTCMonth()];
+  const hour24 = indiaTime.getUTCHours();
+  const hour12 = hour24 % 12 || 12;
+  const minutes = String(indiaTime.getUTCMinutes()).padStart(2, "0");
+  const meridiem = hour24 >= 12 ? "PM" : "AM";
+
+  return `${day} ${month}, ${hour12}:${minutes} ${meridiem}`;
+}
+
+function getSyncStatusLabel(
+  syncStatus: NewsSyncStatus | null,
+  formattedLastSyncAt: string
+) {
+  if (syncStatus?.is_running || syncStatus?.status === "running") {
+    return "Sync running";
+  }
+
+  if (syncStatus?.last_sync?.status === "failed") {
+    return formattedLastSyncAt
+      ? `Last sync failed: ${formattedLastSyncAt}`
+      : "Last sync failed";
+  }
+
+  if (formattedLastSyncAt) {
+    return `Last updated: ${formattedLastSyncAt}`;
+  }
+
+  if (syncStatus === null) {
+    return "Last updated unavailable";
+  }
+
+  return "Last updated: not synced this session";
 }
 
 function NewsCardSkeleton() {
@@ -98,12 +172,6 @@ function LeaderboardSkeleton() {
     >
       <span className="sr-only">Loading company leaderboard</span>
 
-      <div className="faded-divider grid grid-cols-[70px_minmax(0,1fr)] px-4 py-3 font-mono text-[10px] uppercase tracking-[0.14em] text-zinc-500 sm:grid-cols-[90px_minmax(0,1fr)_minmax(180px,360px)]">
-        <span>Rank</span>
-        <span>Company</span>
-        <span className="hidden sm:block">Products</span>
-      </div>
-
       {leaderboardSkeletonRows.map((row, index) => (
         <div
           key={row}
@@ -120,7 +188,6 @@ function LeaderboardSkeleton() {
               }}
             />
           </div>
-
           <span className="skeleton-shimmer hidden h-3 w-[70%] sm:block" />
         </div>
       ))}
@@ -133,14 +200,15 @@ export default function NewsExplorer({
   initialQuery,
   initialTotalCount,
   initialView = "news",
-  initialLeaderboardItems,
+  initialSyncStatus,
 }: NewsExplorerProps) {
   const [activeView, setActiveView] = useState<ExplorerView>(initialView);
   const [newsLayout, setNewsLayout] = useState<NewsLayout>("grid");
   const [newsRankMode, setNewsRankMode] = useState<NewsRankMode>("latest");
   const [items, setItems] = useState<NewsItem[]>(initialItems);
-  const leaderboardItems = initialLeaderboardItems;
-  const [totalResultCount, setTotalResultCount] = useState(initialTotalCount);
+  const [leaderboardItems, setLeaderboardItems] = useState<
+    CompanyLeaderboardItem[]
+  >([]);
   const [categoryCounts, setCategoryCounts] = useState<Record<string, number>>({
     ALL: initialTotalCount,
   });
@@ -150,6 +218,7 @@ export default function NewsExplorer({
   const [activeCategory, setActiveCategory] = useState("ALL");
   const [activeSearchQuery, setActiveSearchQuery] = useState<string | undefined>();
   const [activeTopic, setActiveTopic] = useState<string | undefined>();
+  const [trendingTopic, setTrendingTopic] = useState<string | undefined>();
   const [nextOffset, setNextOffset] = useState(initialItems.length);
   const [hasMoreItems, setHasMoreItems] = useState(
     initialItems.length < initialTotalCount
@@ -157,20 +226,26 @@ export default function NewsExplorer({
   const [showLeaderboardSkeleton, setShowLeaderboardSkeleton] = useState(
     initialView === "leaderboard"
   );
+  const [hasLoadedLeaderboard, setHasLoadedLeaderboard] = useState(false);
   const [showNewsSkeleton, setShowNewsSkeleton] = useState(
     initialView === "news"
   );
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [error, setError] = useState("");
+  const [syncStatus, setSyncStatus] = useState(initialSyncStatus);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const loadMoreInFlightRef = useRef(false);
+  const formattedLastSyncAt = formatLastSyncAt(syncStatus);
+  const syncStatusLabel = getSyncStatusLabel(
+    syncStatus,
+    formattedLastSyncAt
+  );
 
   async function loadNews(
     searchQuery: string | undefined,
     displayLabel: string,
-    topic?: string,
-    rankMode: NewsRankMode = newsRankMode
+    topic?: string
   ) {
     const cleanedQuery = searchQuery?.trim();
 
@@ -185,11 +260,10 @@ export default function NewsExplorer({
       setError("");
       setSearchedQuery(displayLabel);
       const [data] = await Promise.all([
-        getNews(cleanedQuery, itemsPerPage, 0, topic, rankMode),
+        getNews(cleanedQuery, itemsPerPage, 0, topic, "latest"),
         wait(minimumSkeletonDuration),
       ]);
       setItems(data.items);
-      setTotalResultCount(data.count);
       setActiveSearchQuery(cleanedQuery);
       setActiveTopic(topic);
       setNextOffset(data.items.length);
@@ -223,7 +297,7 @@ export default function NewsExplorer({
           itemsPerPage,
           nextOffset,
           activeTopic,
-          newsRankMode
+          "latest"
         ),
         wait(minimumLoadMoreDuration),
       ]);
@@ -253,21 +327,8 @@ export default function NewsExplorer({
     hasMoreItems,
     isLoading,
     isLoadingMore,
-    newsRankMode,
     nextOffset,
   ]);
-
-  useEffect(() => {
-    if (!showLeaderboardSkeleton) {
-      return;
-    }
-
-    const timeout = window.setTimeout(() => {
-      setShowLeaderboardSkeleton(false);
-    }, minimumSkeletonDuration);
-
-    return () => window.clearTimeout(timeout);
-  }, [showLeaderboardSkeleton]);
 
   useEffect(() => {
     if (!showNewsSkeleton) {
@@ -288,7 +349,7 @@ export default function NewsExplorer({
 
     let isMounted = true;
 
-    getNewsCounts(topicLabels, newsRankMode)
+    getNewsCounts(topicLabels)
       .then((data) => {
         if (!isMounted) {
           return;
@@ -311,10 +372,75 @@ export default function NewsExplorer({
     return () => {
       isMounted = false;
     };
-  }, [newsRankMode]);
+  }, []);
+
+  useEffect(() => {
+    if (activeView !== "leaderboard" || hasLoadedLeaderboard) {
+      return;
+    }
+
+    let isMounted = true;
+
+    Promise.all([
+      getCompanyLeaderboard(150, true),
+      wait(minimumSkeletonDuration),
+    ])
+      .then(([data]) => {
+        if (!isMounted) {
+          return;
+        }
+
+        setLeaderboardItems(data.items);
+        setHasLoadedLeaderboard(true);
+      })
+      .catch((leaderboardError) => {
+        console.error(leaderboardError);
+
+        if (isMounted) {
+          setError("Unable to load company leaderboard.");
+        }
+      })
+      .finally(() => {
+        if (isMounted) {
+          setShowLeaderboardSkeleton(false);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [activeView, hasLoadedLeaderboard]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const refreshSyncStatus = async () => {
+      try {
+        const latestSyncStatus = await getSyncStatus();
+
+        if (isMounted) {
+          setSyncStatus(latestSyncStatus);
+        }
+      } catch (syncError) {
+        console.error(syncError);
+      }
+    };
+
+    const interval = window.setInterval(
+      refreshSyncStatus,
+      syncStatusRefreshInterval
+    );
+
+    return () => {
+      isMounted = false;
+      window.clearInterval(interval);
+    };
+  }, []);
 
   async function handleCategoryChange(category: CategoryFilter) {
     setActiveCategory(category.label);
+    setNewsRankMode("latest");
+    setTrendingTopic(undefined);
 
     await loadNews(
       category.label === "ALL" ? undefined : category.query,
@@ -331,11 +457,59 @@ export default function NewsExplorer({
     setNewsRankMode(rankMode);
     setActiveCategory("ALL");
 
+    if (rankMode === "trending") {
+      try {
+        setIsLoading(true);
+        setError("");
+        setSearchedQuery("Trending news");
+
+        const [trendingData] = await Promise.all([
+          getTrendingTopics(1),
+          wait(minimumSkeletonDuration),
+        ]);
+        const topTopic = trendingData.topics[0]?.topic;
+
+        if (!topTopic) {
+          setItems([]);
+          setActiveSearchQuery(undefined);
+          setActiveTopic(undefined);
+          setTrendingTopic(undefined);
+          setNextOffset(0);
+          setHasMoreItems(false);
+          return;
+        }
+
+        setTrendingTopic(topTopic);
+
+        const newsData = await getNews(
+          undefined,
+          itemsPerPage,
+          0,
+          topTopic,
+          "latest"
+        );
+
+        setItems(newsData.items);
+        setActiveSearchQuery(undefined);
+        setActiveTopic(topTopic);
+        setNextOffset(newsData.items.length);
+        setHasMoreItems(newsData.items.length < newsData.count);
+      } catch (trendingError) {
+        console.error(trendingError);
+        setError("Unable to load trending news.");
+      } finally {
+        setIsLoading(false);
+      }
+
+      return;
+    }
+
+    setTrendingTopic(undefined);
+
     await loadNews(
       activeSearchQuery,
-      rankMode === "upvotes" ? "Upvoted" : initialQuery,
-      undefined,
-      rankMode
+      initialQuery,
+      undefined
     );
   }
 
@@ -351,12 +525,6 @@ export default function NewsExplorer({
 
     return (
       <div>
-        <div className="faded-divider grid grid-cols-[70px_minmax(0,1fr)] px-4 py-3 font-mono text-[10px] uppercase tracking-[0.14em] text-zinc-500 sm:grid-cols-[90px_minmax(0,1fr)_minmax(180px,360px)]">
-          <span>Rank</span>
-          <span>Company</span>
-          <span className="hidden sm:block">Products</span>
-        </div>
-
         {leaderboardItems.map((item) => (
           <Link
             key={item.company}
@@ -385,7 +553,9 @@ export default function NewsExplorer({
             </div>
 
             <span className="hidden truncate font-mono text-xs uppercase tracking-[0.08em] text-zinc-500 sm:block">
-              {item.aliases.slice(0, 4).join(" / ") || item.domain || "Company"}
+              {hasCompanyAliases(item)
+                ? formatCompanyAliases(item)
+                : item.domain || "Company"}
             </span>
           </Link>
         ))}
@@ -398,32 +568,37 @@ export default function NewsExplorer({
       {error && <div className="mb-8 border border-red-900 bg-red-950/30 px-5 py-4 font-mono text-xs text-red-300">{error}</div>}
 
       <div className="grid gap-8 lg:grid-cols-[270px_minmax(0,1fr)]">
-        <aside>
-          <p className="mb-4 font-mono text-[11px] uppercase tracking-[0.18em] text-zinc-600">Topics</p>
+        <aside className="lg:sticky lg:top-20 lg:max-h-[calc(100vh-6rem)] lg:self-start lg:overflow-y-auto">
+          <p className="mb-4 font-mono text-xs font-normal uppercase tracking-[0.11em] text-zinc-600">Topics</p>
           <CategoryFilters
             activeCategory={activeCategory}
             counts={categoryCounts}
             onCategoryChange={handleCategoryChange}
             disabled={isLoading}
             loading={isLoading || showNewsSkeleton || showLeaderboardSkeleton}
-            hideEmpty={newsRankMode === "upvotes"}
+            hideEmpty={false}
           />
           <div className="mt-8 hidden border-t border-zinc-800 pt-5 font-mono text-[10px] uppercase leading-5 tracking-[0.12em] text-zinc-700 lg:block">
             <p>Source: AI feeds</p>
-            <p>Index status: live</p>
+            <p>Index status: {syncStatus?.is_running ? "syncing" : "live"}</p>
+            <p className="normal-case tracking-normal text-zinc-500">
+              {syncStatusLabel}
+            </p>
           </div>
         </aside>
 
         <div className="min-w-0">
           <div id="trending" className="mb-5 flex flex-col gap-4 border-b border-zinc-800 pb-4 sm:flex-row sm:items-end sm:justify-between">
-            <div>
+            <div className="min-w-0 flex-1">
               {activeView === "leaderboard" ? (
-                <h2 className="font-mono text-[11px] font-normal uppercase tracking-[0.12em] text-zinc-300">
-                  Top companies
-                </h2>
-              ) : searchedQuery === "All news" || searchedQuery === "ALL" || searchedQuery === "Upvoted" ? (
-                <div className="flex items-center gap-5 font-mono text-[11px] uppercase tracking-[0.12em]">
-                  {(["latest", "upvotes"] as NewsRankMode[]).map((rankMode) => (
+                <div className="grid grid-cols-[70px_minmax(0,1fr)] px-4 font-mono text-[11px] uppercase tracking-[0.14em] text-zinc-500 sm:grid-cols-[90px_minmax(0,1fr)_minmax(180px,360px)]">
+                  <span>Rank</span>
+                  <span>Company</span>
+                  <span className="hidden sm:block">Products</span>
+                </div>
+              ) : searchedQuery === "All news" || searchedQuery === "ALL" || searchedQuery === "Trending news" ? (
+                <div className="flex items-center gap-5 font-mono text-xs font-normal uppercase tracking-[0.11em]">
+                  {(["latest", "trending"] as NewsRankMode[]).map((rankMode) => (
                     <button
                       key={rankMode}
                       type="button"
@@ -435,7 +610,7 @@ export default function NewsExplorer({
                           : "text-zinc-600 hover:text-zinc-300"
                       }`}
                     >
-                      {rankMode === "latest" ? "Latest" : "Upvoted"}
+                      {rankMode === "latest" ? "LATEST" : "TRENDING NEWS"}
                     </button>
                   ))}
                 </div>
@@ -445,22 +620,13 @@ export default function NewsExplorer({
                 </h2>
               )}
             </div>
-            <div className="flex flex-wrap items-center gap-4 font-mono text-[11px] uppercase tracking-[0.12em] text-zinc-600">
-              <span>
-                {activeView === "leaderboard"
-                  ? `${leaderboardItems.length.toString().padStart(2, "0")} companies`
-                  : isLoading || showNewsSkeleton
-                  ? "Scanning index"
-                  : `${items.length.toString().padStart(2, "0")} / ${totalResultCount} results`}
-              </span>
-              <span className="border-b border-[#3b82f6] pb-1 text-zinc-300">
-                {activeView === "leaderboard"
-                  ? "Catalog"
-                  : newsRankMode === "upvotes"
-                  ? "Top ranked"
-                  : "Last 30 days"}
-              </span>
-              {activeView === "news" && (
+            {activeView === "news" && (
+              <div className="flex flex-wrap items-center gap-4 font-mono text-xs font-normal uppercase tracking-[0.11em] text-zinc-600">
+                <span className="border-b border-[#3b82f6] pb-1 text-zinc-300">
+                  {newsRankMode === "trending"
+                    ? trendingTopic ?? "Trending"
+                    : "Last 30 days"}
+                </span>
                 <div className="flex border border-zinc-800 bg-[#0b0b0b]">
                   {(["grid", "list"] as NewsLayout[]).map((layout) => (
                     <button
@@ -492,8 +658,8 @@ export default function NewsExplorer({
                     </button>
                   ))}
                 </div>
-              )}
-            </div>
+              </div>
+            )}
           </div>
 
           {activeView === "leaderboard" ? (

@@ -14,6 +14,7 @@ from app.repositories.news_repository import (
     get_latest_news,
     get_news_by_id,
     get_news_by_topic,
+    get_trending_topic_counts,
     search_news,
 )
 from app.services.news_ingestion_service import is_valid_article_image_url
@@ -215,6 +216,69 @@ def get_news_counts(
             for topic in topics
             if topic.strip()
         ],
+    }
+
+
+@router.get("/trending-topics")
+def get_trending_topics(
+    limit: int = Query(
+        default=8,
+        ge=1,
+        le=30,
+    ),
+    db: Session = Depends(get_db),
+) -> dict:
+    published_after = get_news_window_cutoff()
+    topic_counts = get_trending_topic_counts(
+        db=db,
+        published_after=published_after,
+    )
+    now = datetime.now(timezone.utc)
+
+    def trend_score(
+        count: int,
+        latest_published_at: datetime | None,
+    ) -> float:
+        if latest_published_at is None:
+            return float(count)
+
+        if latest_published_at.tzinfo is None:
+            latest_published_at = latest_published_at.replace(
+                tzinfo=timezone.utc,
+            )
+
+        age_hours = max(
+            (now - latest_published_at).total_seconds() / 3600,
+            1,
+        )
+        freshness_boost = max(0.25, 1 / (age_hours ** 0.35))
+
+        return round(count * (1 + freshness_boost), 3)
+
+    topics = [
+        {
+            "topic": topic,
+            "count": count,
+            "latest_published_at": latest_published_at,
+            "trend_score": trend_score(count, latest_published_at),
+        }
+        for topic, count, latest_published_at in topic_counts
+    ]
+    topics.sort(
+        key=lambda item: (
+            item["trend_score"],
+            item["count"],
+            item["latest_published_at"] or datetime.min.replace(
+                tzinfo=timezone.utc,
+            ),
+        ),
+        reverse=True,
+    )
+
+    return {
+        "window_days": settings.atlascore_news_window_days,
+        "count": len(topics),
+        "topics": topics[:limit],
     }
 
 

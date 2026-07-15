@@ -95,7 +95,7 @@ export default function Navbar() {
       try {
         const [newsData, companyData] = await Promise.all([
           getNews(cleanedQuery, 5),
-          getCompanyLeaderboard(150),
+          getCompanyLeaderboard(150, false),
         ]);
 
         if (!isCurrent) {

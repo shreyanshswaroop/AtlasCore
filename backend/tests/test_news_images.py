@@ -6,7 +6,11 @@ os.environ.setdefault("DATABASE_URL", "sqlite:///test.db")
 
 from app.core.config import Settings
 from app.core.news_source_catalog import NewsSource
-from app.services.news_ingestion_service import fetch_open_graph_image
+from app.services.news_ingestion_service import (
+    fetch_open_graph_image,
+    is_duplicate_title_signature,
+    title_signature,
+)
 
 
 class FakeResponse:
@@ -80,6 +84,41 @@ class NewsImageTests(unittest.TestCase):
         )
 
         self.assertFalse(settings.atlascore_news_fetch_og_images)
+
+
+class NewsDuplicateTitleTests(unittest.TestCase):
+    def test_detects_same_title_with_publisher_suffix(self) -> None:
+        first_title = "OpenAI launches new agent tools"
+        second_title = "OpenAI launches new agent tools - OpenAI"
+
+        self.assertTrue(
+            is_duplicate_title_signature(
+                title_signature(first_title),
+                title_signature(second_title),
+            )
+        )
+
+    def test_detects_near_duplicate_title_with_small_word_changes(self) -> None:
+        first_title = "Google DeepMind introduces faster reasoning models for developers"
+        second_title = "Google DeepMind introduces faster reasoning model for developers"
+
+        self.assertTrue(
+            is_duplicate_title_signature(
+                title_signature(first_title),
+                title_signature(second_title),
+            )
+        )
+
+    def test_allows_related_but_different_story(self) -> None:
+        first_title = "NVIDIA releases new GPUs for AI training"
+        second_title = "NVIDIA invests in cloud infrastructure for AI inference"
+
+        self.assertFalse(
+            is_duplicate_title_signature(
+                title_signature(first_title),
+                title_signature(second_title),
+            )
+        )
 
 
 if __name__ == "__main__":

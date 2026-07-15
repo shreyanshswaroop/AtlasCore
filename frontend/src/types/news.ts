@@ -33,3 +33,33 @@ export type NewsCountsResponse = {
     count: number;
   }[];
 };
+
+export type TrendingTopic = {
+  topic: string;
+  count: number;
+  latest_published_at: string | null;
+  trend_score: number;
+};
+
+export type TrendingTopicsResponse = {
+  window_days: number;
+  count: number;
+  topics: TrendingTopic[];
+};
+
+export type NewsSyncResult = {
+  started_at: string;
+  finished_at: string | null;
+  status: "running" | "completed" | "failed" | string;
+  fetched: number;
+  processed: number;
+  failed: number;
+  total_items: number;
+  error: string | null;
+};
+
+export type NewsSyncStatus = {
+  status: "idle" | "running" | "completed" | "failed" | string;
+  last_sync: NewsSyncResult | null;
+  is_running: boolean;
+};

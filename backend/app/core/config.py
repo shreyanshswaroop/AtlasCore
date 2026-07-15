@@ -11,6 +11,12 @@ class Settings(BaseSettings):
     atlascore_sync_max_results_per_topic: int = 50
     atlascore_news_fetch_og_images: bool = True
     atlascore_news_window_days: int = 30
+    atlascore_company_ranking_enabled: bool = True
+    atlascore_company_ranking_timespan: str = "7d"
+    atlascore_company_ranking_cache_seconds: int = 1800
+    atlascore_company_ranking_max_companies: int = 150
+    atlascore_company_ranking_refresh_on_startup: bool = True
+    atlascore_company_ranking_stale_hours: int = 6
     atlascore_sync_email_enabled: bool = False
     atlascore_sync_email_to: str | None = None
     atlascore_sync_email_from: str | None = None
@@ -22,6 +28,8 @@ class Settings(BaseSettings):
 
     @field_validator(
         "atlascore_news_fetch_og_images",
+        "atlascore_company_ranking_enabled",
+        "atlascore_company_ranking_refresh_on_startup",
         "atlascore_sync_email_enabled",
         "smtp_use_tls",
         mode="before",
