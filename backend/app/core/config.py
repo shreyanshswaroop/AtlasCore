@@ -25,6 +25,9 @@ class Settings(BaseSettings):
     smtp_username: str | None = None
     smtp_password: str | None = None
     smtp_use_tls: bool = True
+    auth_secret_key: str = "atlascore-dev-auth-secret-change-me"
+    auth_token_expire_minutes: int = 60 * 24 * 7
+    auth_cookie_secure: bool = False
 
     @field_validator(
         "atlascore_news_fetch_og_images",
@@ -32,6 +35,7 @@ class Settings(BaseSettings):
         "atlascore_company_ranking_refresh_on_startup",
         "atlascore_sync_email_enabled",
         "smtp_use_tls",
+        "auth_cookie_secure",
         mode="before",
     )
     @classmethod

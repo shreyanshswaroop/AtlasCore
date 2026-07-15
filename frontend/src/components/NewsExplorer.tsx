@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import {
   getCompanyLeaderboard,
+  getCurrentUser,
   getNews,
   getNewsCounts,
   getSyncStatus,
@@ -234,6 +235,8 @@ export default function NewsExplorer({
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [error, setError] = useState("");
   const [syncStatus, setSyncStatus] = useState(initialSyncStatus);
+  const [preferredTopicLabels, setPreferredTopicLabels] = useState<string[]>([]);
+  const personalizedFeedLoadedRef = useRef(false);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const loadMoreInFlightRef = useRef(false);
   const formattedLastSyncAt = formatLastSyncAt(syncStatus);
@@ -341,6 +344,69 @@ export default function NewsExplorer({
 
     return () => window.clearTimeout(timeout);
   }, [showNewsSkeleton]);
+
+  useEffect(() => {
+    async function applyPersonalizedFeed() {
+      try {
+        const user = await getCurrentUser();
+
+        if (
+          !user?.onboarding_completed ||
+          user.preferred_topics.length === 0
+        ) {
+          setPreferredTopicLabels([]);
+          return;
+        }
+
+        const availablePreferredTopics = user.preferred_topics.filter((topic) =>
+          categories.some((category) => category.label === topic)
+        );
+
+        setPreferredTopicLabels(availablePreferredTopics);
+
+        if (
+          personalizedFeedLoadedRef.current ||
+          initialView !== "news" ||
+          initialQuery !== "All news" ||
+          availablePreferredTopics.length === 0
+        ) {
+          return;
+        }
+
+        const preferredTopic = availablePreferredTopics[0];
+        const preferredCategory = categories.find(
+          (category) => category.label === preferredTopic
+        );
+
+        if (!preferredCategory) {
+          return;
+        }
+
+        personalizedFeedLoadedRef.current = true;
+        setActiveCategory(preferredCategory.label);
+        await loadNews(
+          preferredCategory.query,
+          `For you: ${preferredCategory.label}`,
+          preferredCategory.label
+        );
+      } catch (authError) {
+        console.error(authError);
+      }
+    }
+
+    void applyPersonalizedFeed();
+
+    function handleAuthUpdate() {
+      personalizedFeedLoadedRef.current = false;
+      void applyPersonalizedFeed();
+    }
+
+    window.addEventListener("atlascore-auth-updated", handleAuthUpdate);
+
+    return () => {
+      window.removeEventListener("atlascore-auth-updated", handleAuthUpdate);
+    };
+  }, [initialQuery, initialView]);
 
   useEffect(() => {
     const topicLabels = categories
@@ -577,6 +643,7 @@ export default function NewsExplorer({
             disabled={isLoading}
             loading={isLoading || showNewsSkeleton || showLeaderboardSkeleton}
             hideEmpty={false}
+            visibleLabels={preferredTopicLabels}
           />
           <div className="mt-8 hidden border-t border-zinc-800 pt-5 font-mono text-[10px] uppercase leading-5 tracking-[0.12em] text-zinc-700 lg:block">
             <p>Source: AI feeds</p>

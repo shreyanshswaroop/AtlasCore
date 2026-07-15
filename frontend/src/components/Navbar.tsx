@@ -3,11 +3,26 @@
 import { FormEvent, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { getCompanyLeaderboard, getNews } from "@/lib/api";
+import {
+  getCompanyLeaderboard,
+  getCurrentUser,
+  getNews,
+  logout,
+  type AuthUser,
+} from "@/lib/api";
 import type { CompanyLeaderboardItem } from "@/types/company";
 import type { NewsItem } from "@/types/news";
 
+import AuthModal from "./AuthModal";
 import AtlasCoreLogo from "./AtlasCoreLogo";
+
+type AuthMode = "signin" | "signup";
+
+function wait(milliseconds: number) {
+  return new Promise((resolve) => {
+    window.setTimeout(resolve, milliseconds);
+  });
+}
 
 const navigationItems = [
   { label: "Explore", href: "/" },
@@ -55,6 +70,10 @@ export default function Navbar() {
   const [isSearching, setIsSearching] = useState(false);
   const [companyResults, setCompanyResults] = useState<CompanyLeaderboardItem[]>([]);
   const [articleResults, setArticleResults] = useState<NewsItem[]>([]);
+  const [currentUser, setCurrentUser] = useState<AuthUser | null>(null);
+  const [isSigningOut, setIsSigningOut] = useState(false);
+  const [authMode, setAuthMode] = useState<AuthMode | null>(null);
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
 
   function getCompanyDisplayName(company: CompanyLeaderboardItem) {
     const cleanedQuery = query.trim().toLowerCase();
@@ -81,6 +100,48 @@ export default function Navbar() {
     event.preventDefault();
     submitSearch();
   }
+
+  async function handleSignOut() {
+    setIsSigningOut(true);
+    setIsProfileMenuOpen(false);
+
+    try {
+      await Promise.all([
+        logout(),
+        wait(900),
+      ]);
+      setCurrentUser(null);
+      window.dispatchEvent(new Event("atlascore-auth-updated"));
+      router.push("/");
+      router.refresh();
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsSigningOut(false);
+    }
+  }
+
+  useEffect(() => {
+    let isCurrent = true;
+
+    getCurrentUser()
+      .then((user) => {
+        if (isCurrent) {
+          setCurrentUser(user);
+        }
+      })
+      .catch((error) => {
+        console.error(error);
+
+        if (isCurrent) {
+          setCurrentUser(null);
+        }
+      });
+
+    return () => {
+      isCurrent = false;
+    };
+  }, []);
 
   useEffect(() => {
     const cleanedQuery = query.trim();
@@ -136,6 +197,7 @@ export default function Navbar() {
   }, [query]);
 
   return (
+    <>
     <header className="sticky top-0 z-50 bg-[#070707]/85 backdrop-blur">
       <nav className="flex h-14 w-full items-center gap-4 px-3 sm:px-4">
         <div className="flex items-center gap-8">
@@ -292,22 +354,128 @@ export default function Navbar() {
             )}
           </div>
 
-          <div className="flex items-center gap-2">
-            <Link
-              href="/signin"
-              className="flex h-9 items-center px-2 font-mono text-[11px] font-bold uppercase tracking-[0.14em] text-zinc-500 hover:text-zinc-100"
+          {currentUser ? (
+            <div
+              className={`flex items-center gap-2 transition duration-300 ${
+                isSigningOut
+                  ? "translate-y-1 opacity-60"
+                  : "translate-y-0 opacity-100"
+              }`}
             >
-              Sign in
-            </Link>
-            <Link
-              href="/signup"
-              className="flex h-9 items-center border border-zinc-700/80 bg-white/[0.03] px-3 font-mono text-[11px] font-bold uppercase tracking-[0.14em] text-zinc-300 hover:border-zinc-500 hover:text-white"
-            >
-              Sign up
-            </Link>
-          </div>
+              <div
+                className="relative"
+                onBlur={(event) => {
+                  if (!event.currentTarget.contains(event.relatedTarget)) {
+                    setIsProfileMenuOpen(false);
+                  }
+                }}
+              >
+                <button
+                  type="button"
+                  aria-haspopup="menu"
+                  aria-expanded={isProfileMenuOpen}
+                  onClick={() => setIsProfileMenuOpen((isOpen) => !isOpen)}
+                  className="flex h-9 items-center gap-2 border border-zinc-700/80 bg-white/[0.03] px-2.5 font-mono text-[11px] font-bold uppercase tracking-[0.14em] text-zinc-300 hover:border-zinc-500 hover:text-white"
+                >
+                  <span className="grid h-6 w-6 place-items-center bg-zinc-900 text-[9px] text-white">
+                    {currentUser.full_name.slice(0, 2)}
+                  </span>
+                  <span className="hidden max-w-28 truncate sm:block">
+                    {currentUser.full_name}
+                  </span>
+                </button>
+
+                {isProfileMenuOpen && (
+  <div
+    role="menu"
+    className="absolute right-0 top-11 z-[80] w-56 border border-zinc-700 bg-[#050505] shadow-2xl shadow-black/60 animate-[auth-form-in_180ms_ease-out_both]"
+  >
+    <div className="flex items-center gap-3 border-b border-zinc-800 p-3">
+      <span className="grid h-9 w-9 shrink-0 place-items-center bg-zinc-900 font-mono text-[11px] font-bold uppercase text-white">
+        {currentUser.full_name.slice(0, 2)}
+      </span>
+
+      <p className="min-w-0 truncate font-mono text-[11px] font-bold uppercase tracking-[0.08em] text-white">
+        {currentUser.full_name.replaceAll(" ", "_")}
+      </p>
+    </div>
+
+    <div className="border-b border-zinc-800 py-1">
+      <Link
+        href="/profile"
+        role="menuitem"
+        onClick={() => setIsProfileMenuOpen(false)}
+        className="flex h-10 items-center gap-3 px-3 font-mono text-[11px] uppercase tracking-[0.12em] text-zinc-400 hover:bg-zinc-900 hover:text-white"
+      >
+        <span aria-hidden="true" className="w-4 text-base">
+          ⚙
+        </span>
+        Settings
+      </Link>
+
+      <Link
+        href="/about"
+        role="menuitem"
+        onClick={() => setIsProfileMenuOpen(false)}
+        className="flex h-10 items-center gap-3 px-3 font-mono text-[11px] uppercase tracking-[0.12em] text-zinc-400 hover:bg-zinc-900 hover:text-white"
+      >
+        <span aria-hidden="true" className="w-4 text-base">
+          ▤
+        </span>
+        About
+      </Link>
+    </div>
+
+    <button
+      type="button"
+      role="menuitem"
+      onClick={handleSignOut}
+      disabled={isSigningOut}
+      className="flex h-10 w-full items-center gap-3 px-3 text-left font-mono text-[11px] uppercase tracking-[0.12em] text-zinc-400 hover:bg-zinc-900 hover:text-white disabled:cursor-wait disabled:text-zinc-600"
+    >
+      <span aria-hidden="true" className="w-4 text-base">
+        ↪
+      </span>
+      {isSigningOut ? "Leaving" : "Log out"}
+    </button>
+  </div>
+)}
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 animate-[auth-form-in_220ms_ease-out_both]">
+              <button
+                type="button"
+                onClick={() => setAuthMode("signin")}
+                className="flex h-9 items-center px-2 font-mono text-[11px] font-bold uppercase tracking-[0.14em] text-zinc-500 hover:text-zinc-100"
+              >
+                Sign in
+              </button>
+              <button
+                type="button"
+                onClick={() => setAuthMode("signup")}
+                className="flex h-9 items-center border border-zinc-700/80 bg-white/[0.03] px-3 font-mono text-[11px] font-bold uppercase tracking-[0.14em] text-zinc-300 hover:border-zinc-500 hover:text-white"
+              >
+                Sign up
+              </button>
+            </div>
+          )}
         </div>
       </nav>
     </header>
+
+    {authMode && (
+      <AuthModal
+        initialMode={authMode}
+        onClose={() => setAuthMode(null)}
+        onAuthenticated={(user) => {
+          setCurrentUser(user);
+          setAuthMode(null);
+          window.dispatchEvent(new Event("atlascore-auth-updated"));
+          router.refresh();
+        }}
+      />
+    )}
+    </>
   );
 }

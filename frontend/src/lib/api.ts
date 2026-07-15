@@ -11,7 +11,234 @@ import type {
 } from "@/types/news";
 
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://127.0.0.1:8000";
+  process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000";
+
+export type AuthUser = {
+  id: number;
+  email: string;
+  full_name: string;
+  onboarding_completed: boolean;
+  job_title: string | null;
+  preferred_topics: string[];
+  preferred_content_types: string[];
+};
+
+export type AuthResponse = {
+  user: AuthUser;
+  access_token?: string | null;
+};
+
+const authTokenStorageKey = "atlascore_auth_token";
+
+function getStoredAuthToken() {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  return window.localStorage.getItem(authTokenStorageKey);
+}
+
+function storeAuthToken(token?: string | null) {
+  if (typeof window === "undefined" || !token) {
+    return;
+  }
+
+  window.localStorage.setItem(authTokenStorageKey, token);
+}
+
+function clearStoredAuthToken() {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  window.localStorage.removeItem(authTokenStorageKey);
+}
+
+function getAuthHeaders(): Record<string, string> {
+  const token = getStoredAuthToken();
+
+  if (!token) {
+    return {};
+  }
+
+  return {
+    Authorization: `Bearer ${token}`,
+  };
+}
+
+async function getErrorMessage(response: Response, fallback: string) {
+  const contentType = response.headers.get("content-type");
+
+  if (contentType?.includes("application/json")) {
+    const payload = await response.json().catch(() => null);
+
+    if (
+      payload &&
+      typeof payload === "object" &&
+      "detail" in payload &&
+      typeof payload.detail === "string"
+    ) {
+      return payload.detail;
+    }
+  }
+
+  return (await response.text()) || fallback;
+}
+
+export async function signup(
+  fullName: string,
+  email: string,
+  password: string
+): Promise<AuthResponse> {
+  const response = await fetch(`${API_BASE_URL}/api/auth/signup`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+    body: JSON.stringify({
+      full_name: fullName,
+      email,
+      password,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(
+      await getErrorMessage(response, `Failed to create account: ${response.status}`)
+    );
+  }
+
+  const payload = (await response.json()) as AuthResponse;
+  storeAuthToken(payload.access_token);
+
+  return payload;
+}
+
+export async function signin(
+  email: string,
+  password: string
+): Promise<AuthResponse> {
+  const response = await fetch(`${API_BASE_URL}/api/auth/signin`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+    body: JSON.stringify({
+      email,
+      password,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(
+      await getErrorMessage(response, `Failed to sign in: ${response.status}`)
+    );
+  }
+
+  const payload = (await response.json()) as AuthResponse;
+  storeAuthToken(payload.access_token);
+
+  return payload;
+}
+
+export async function logout(): Promise<void> {
+  clearStoredAuthToken();
+
+  const response = await fetch(`${API_BASE_URL}/api/auth/logout`, {
+    method: "POST",
+    credentials: "include",
+  });
+
+  if (!response.ok) {
+    throw new Error(
+      await getErrorMessage(response, `Failed to sign out: ${response.status}`)
+    );
+  }
+}
+
+export async function getCurrentUser(): Promise<AuthUser | null> {
+  const response = await fetch(`${API_BASE_URL}/api/auth/me`, {
+    headers: {
+      ...getAuthHeaders(),
+    },
+    credentials: "include",
+    cache: "no-store",
+  });
+
+  if (response.status === 401) {
+    return null;
+  }
+
+  if (!response.ok) {
+    throw new Error(
+      await getErrorMessage(response, `Failed to fetch account: ${response.status}`)
+    );
+  }
+
+  const payload = (await response.json()) as AuthResponse;
+
+  return payload.user;
+}
+
+export async function completeOnboarding(
+  jobTitle: string,
+  preferredTopics: string[],
+  preferredContentTypes: string[]
+): Promise<AuthResponse> {
+  const response = await fetch(`${API_BASE_URL}/api/auth/onboarding`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...getAuthHeaders(),
+    },
+    credentials: "include",
+    body: JSON.stringify({
+      job_title: jobTitle,
+      preferred_topics: preferredTopics,
+      preferred_content_types: preferredContentTypes,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(
+      await getErrorMessage(response, `Failed to save preferences: ${response.status}`)
+    );
+  }
+
+  return response.json() as Promise<AuthResponse>;
+}
+
+export async function updateProfile(
+  fullName: string,
+  jobTitle: string,
+  preferredTopics: string[],
+  preferredContentTypes: string[]
+): Promise<AuthResponse> {
+  const response = await fetch(`${API_BASE_URL}/api/auth/profile`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      ...getAuthHeaders(),
+    },
+    credentials: "include",
+    body: JSON.stringify({
+      full_name: fullName,
+      job_title: jobTitle,
+      preferred_topics: preferredTopics,
+      preferred_content_types: preferredContentTypes,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(
+      await getErrorMessage(response, `Failed to save profile: ${response.status}`)
+    );
+  }
+
+  return response.json() as Promise<AuthResponse>;
+}
 
 export async function getNews(
   query?: string,

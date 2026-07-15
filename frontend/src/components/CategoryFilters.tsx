@@ -5,6 +5,7 @@ interface CategoryFiltersProps {
   disabled?: boolean;
   loading?: boolean;
   hideEmpty?: boolean;
+  visibleLabels?: string[];
 }
 
 export type CategoryFilter = {
@@ -295,18 +296,25 @@ export default function CategoryFilters({
   disabled = false,
   loading = false,
   hideEmpty = false,
+  visibleLabels,
 }: CategoryFiltersProps) {
   if (loading) {
     return <CategoryFiltersSkeleton />;
   }
 
+  const filteredCategories = visibleLabels && visibleLabels.length > 0
+    ? categories.filter((category) =>
+        category.label === "ALL" || visibleLabels.includes(category.label)
+      )
+    : categories;
+
   const visibleCategories = hideEmpty
-    ? categories.filter((category) => {
+    ? filteredCategories.filter((category) => {
         const count = counts?.[category.label];
 
         return category.label === "ALL" || count === undefined || count > 0;
       })
-    : categories;
+    : filteredCategories;
 
   return (
     <div className="flex gap-2 overflow-x-auto pb-2 lg:block lg:max-h-[620px] lg:space-y-0.5 lg:overflow-y-auto lg:overflow-x-hidden lg:pb-0 lg:pr-1">

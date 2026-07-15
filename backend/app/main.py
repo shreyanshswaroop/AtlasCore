@@ -3,6 +3,7 @@ import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.api.auth import router as auth_router
 from app.api.companies import router as companies_router
 from app.api.news import router as news_router
 from app.api.sync import router as sync_router
@@ -28,8 +29,11 @@ frontend_url = os.getenv(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000",
-                frontend_url,],
+    allow_origins=[
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        frontend_url,
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -38,6 +42,7 @@ app.add_middleware(
 app.include_router(companies_router)
 app.include_router(news_router)
 app.include_router(sync_router)
+app.include_router(auth_router)
 
 
 @app.on_event("startup")

@@ -20,7 +20,7 @@ if config.config_file_name is not None:
 # target_metadata = mymodel.Base.metadata
 from app.core.config import get_settings
 from app.core.database import Base
-from app.models import CompanyLeaderboardSnapshot, NewsItem, SyncRun
+from app.models import CompanyLeaderboardSnapshot, NewsItem, SyncRun, User
 
 settings = get_settings()
 
