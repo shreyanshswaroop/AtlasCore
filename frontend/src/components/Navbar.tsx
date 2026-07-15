@@ -107,12 +107,15 @@ export default function Navbar() {
     try {
       await Promise.all([
         logout(),
-        wait(900),
+        wait(260),
       ]);
       setCurrentUser(null);
-      window.dispatchEvent(new Event("atlascore-auth-updated"));
-      router.push("/");
-      router.refresh();
+      window.dispatchEvent(
+        new CustomEvent("atlascore-auth-updated", {
+          detail: { reason: "logout" },
+        })
+      );
+      router.replace("/");
     } catch (error) {
       console.error(error);
     } finally {
@@ -352,112 +355,118 @@ export default function Navbar() {
             )}
           </div>
 
-          {currentUser ? (
-            <div
-              className={`flex items-center gap-2 transition duration-300 ${
-                isSigningOut
-                  ? "translate-y-1 opacity-60"
-                  : "translate-y-0 opacity-100"
-              }`}
-            >
+          <div
+            className={`relative flex h-9 justify-end ${
+              currentUser ? "min-w-0" : "min-w-[166px]"
+            }`}
+          >
+            {currentUser ? (
               <div
-                className="relative"
-                onBlur={(event) => {
-                  if (!event.currentTarget.contains(event.relatedTarget)) {
-                    setIsProfileMenuOpen(false);
-                  }
-                }}
+                className={`flex items-center gap-2 transition-all duration-[240ms] ease-out ${
+                  isSigningOut
+                    ? "pointer-events-none translate-y-2 scale-[0.98] opacity-0"
+                    : "translate-y-0 opacity-100"
+                }`}
               >
+                <div
+                  className="relative"
+                  onBlur={(event) => {
+                    if (!event.currentTarget.contains(event.relatedTarget)) {
+                      setIsProfileMenuOpen(false);
+                    }
+                  }}
+                >
+                  <button
+                    type="button"
+                    aria-haspopup="menu"
+                    aria-expanded={isProfileMenuOpen}
+                    onClick={() => setIsProfileMenuOpen((isOpen) => !isOpen)}
+                    className="flex h-9 items-center gap-2 border border-zinc-700/80 bg-white/[0.03] px-2.5 font-mono text-[11px] font-bold uppercase tracking-[0.14em] text-zinc-300 hover:border-zinc-500 hover:text-white"
+                  >
+                    <span className="grid h-6 w-6 place-items-center bg-zinc-900 text-[9px] text-white">
+                      {currentUser.full_name.slice(0, 2)}
+                    </span>
+                    <span className="hidden max-w-28 truncate sm:block">
+                      {currentUser.full_name}
+                    </span>
+                  </button>
+
+                  {isProfileMenuOpen && (
+                    <div
+                      role="menu"
+                      className="absolute right-0 top-11 z-[80] w-56 border border-zinc-700 bg-[#050505] shadow-2xl shadow-black/60 animate-[auth-form-in_180ms_ease-out_both]"
+                    >
+                      <div className="flex items-center gap-3 border-b border-zinc-800 p-3">
+                        <span className="grid h-9 w-9 shrink-0 place-items-center bg-zinc-900 font-mono text-[11px] font-bold uppercase text-white">
+                          {currentUser.full_name.slice(0, 2)}
+                        </span>
+
+                        <p className="min-w-0 truncate font-mono text-[11px] font-bold uppercase tracking-[0.08em] text-white">
+                          {currentUser.full_name.replaceAll(" ", "_")}
+                        </p>
+                      </div>
+
+                      <div className="border-b border-zinc-800 py-1">
+                        <Link
+                          href="/profile"
+                          role="menuitem"
+                          onClick={() => setIsProfileMenuOpen(false)}
+                          className="flex h-10 items-center gap-3 px-3 font-mono text-[11px] uppercase tracking-[0.12em] text-zinc-400 hover:bg-zinc-900 hover:text-white"
+                        >
+                          <span aria-hidden="true" className="w-4 text-base">
+                            ⚙
+                          </span>
+                          Settings
+                        </Link>
+
+                        <Link
+                          href="/about"
+                          role="menuitem"
+                          onClick={() => setIsProfileMenuOpen(false)}
+                          className="flex h-10 items-center gap-3 px-3 font-mono text-[11px] uppercase tracking-[0.12em] text-zinc-400 hover:bg-zinc-900 hover:text-white"
+                        >
+                          <span aria-hidden="true" className="w-4 text-base">
+                            ▤
+                          </span>
+                          About
+                        </Link>
+                      </div>
+
+                      <button
+                        type="button"
+                        role="menuitem"
+                        onClick={handleSignOut}
+                        disabled={isSigningOut}
+                        className="flex h-10 w-full items-center gap-3 px-3 text-left font-mono text-[11px] uppercase tracking-[0.12em] text-zinc-400 hover:bg-zinc-900 hover:text-white disabled:cursor-wait disabled:text-zinc-600"
+                      >
+                        <span aria-hidden="true" className="w-4 text-base">
+                          ↪
+                        </span>
+                        {isSigningOut ? "Leaving" : "Log out"}
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 animate-[navbar-auth-in_260ms_cubic-bezier(0.22,1,0.36,1)_both]">
                 <button
                   type="button"
-                  aria-haspopup="menu"
-                  aria-expanded={isProfileMenuOpen}
-                  onClick={() => setIsProfileMenuOpen((isOpen) => !isOpen)}
-                  className="flex h-9 items-center gap-2 border border-zinc-700/80 bg-white/[0.03] px-2.5 font-mono text-[11px] font-bold uppercase tracking-[0.14em] text-zinc-300 hover:border-zinc-500 hover:text-white"
+                  onClick={() => setAuthMode("signin")}
+                  className="flex h-9 items-center px-2 font-mono text-[11px] font-bold uppercase tracking-[0.14em] text-zinc-500 hover:text-zinc-100"
                 >
-                  <span className="grid h-6 w-6 place-items-center bg-zinc-900 text-[9px] text-white">
-                    {currentUser.full_name.slice(0, 2)}
-                  </span>
-                  <span className="hidden max-w-28 truncate sm:block">
-                    {currentUser.full_name}
-                  </span>
+                  Sign in
                 </button>
-
-                {isProfileMenuOpen && (
-  <div
-    role="menu"
-    className="absolute right-0 top-11 z-[80] w-56 border border-zinc-700 bg-[#050505] shadow-2xl shadow-black/60 animate-[auth-form-in_180ms_ease-out_both]"
-  >
-    <div className="flex items-center gap-3 border-b border-zinc-800 p-3">
-      <span className="grid h-9 w-9 shrink-0 place-items-center bg-zinc-900 font-mono text-[11px] font-bold uppercase text-white">
-        {currentUser.full_name.slice(0, 2)}
-      </span>
-
-      <p className="min-w-0 truncate font-mono text-[11px] font-bold uppercase tracking-[0.08em] text-white">
-        {currentUser.full_name.replaceAll(" ", "_")}
-      </p>
-    </div>
-
-    <div className="border-b border-zinc-800 py-1">
-      <Link
-        href="/profile"
-        role="menuitem"
-        onClick={() => setIsProfileMenuOpen(false)}
-        className="flex h-10 items-center gap-3 px-3 font-mono text-[11px] uppercase tracking-[0.12em] text-zinc-400 hover:bg-zinc-900 hover:text-white"
-      >
-        <span aria-hidden="true" className="w-4 text-base">
-          ⚙
-        </span>
-        Settings
-      </Link>
-
-      <Link
-        href="/about"
-        role="menuitem"
-        onClick={() => setIsProfileMenuOpen(false)}
-        className="flex h-10 items-center gap-3 px-3 font-mono text-[11px] uppercase tracking-[0.12em] text-zinc-400 hover:bg-zinc-900 hover:text-white"
-      >
-        <span aria-hidden="true" className="w-4 text-base">
-          ▤
-        </span>
-        About
-      </Link>
-    </div>
-
-    <button
-      type="button"
-      role="menuitem"
-      onClick={handleSignOut}
-      disabled={isSigningOut}
-      className="flex h-10 w-full items-center gap-3 px-3 text-left font-mono text-[11px] uppercase tracking-[0.12em] text-zinc-400 hover:bg-zinc-900 hover:text-white disabled:cursor-wait disabled:text-zinc-600"
-    >
-      <span aria-hidden="true" className="w-4 text-base">
-        ↪
-      </span>
-      {isSigningOut ? "Leaving" : "Log out"}
-    </button>
-  </div>
-)}
+                <button
+                  type="button"
+                  onClick={() => setAuthMode("signup")}
+                  className="flex h-9 items-center border border-zinc-700/80 bg-white/[0.03] px-3 font-mono text-[11px] font-bold uppercase tracking-[0.14em] text-zinc-300 hover:border-zinc-500 hover:text-white"
+                >
+                  Sign up
+                </button>
               </div>
-            </div>
-          ) : (
-            <div className="flex items-center gap-2 animate-[auth-form-in_220ms_ease-out_both]">
-              <button
-                type="button"
-                onClick={() => setAuthMode("signin")}
-                className="flex h-9 items-center px-2 font-mono text-[11px] font-bold uppercase tracking-[0.14em] text-zinc-500 hover:text-zinc-100"
-              >
-                Sign in
-              </button>
-              <button
-                type="button"
-                onClick={() => setAuthMode("signup")}
-                className="flex h-9 items-center border border-zinc-700/80 bg-white/[0.03] px-3 font-mono text-[11px] font-bold uppercase tracking-[0.14em] text-zinc-300 hover:border-zinc-500 hover:text-white"
-              >
-                Sign up
-              </button>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </nav>
     </header>

@@ -237,6 +237,7 @@ export default function NewsExplorer({
   const [syncStatus, setSyncStatus] = useState(initialSyncStatus);
   const [preferredTopicLabels, setPreferredTopicLabels] = useState<string[]>([]);
   const personalizedFeedLoadedRef = useRef(false);
+  const blockPersonalizedFeedRef = useRef(false);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const loadMoreInFlightRef = useRef(false);
   const formattedLastSyncAt = formatLastSyncAt(syncStatus);
@@ -350,6 +351,10 @@ export default function NewsExplorer({
       try {
         const user = await getCurrentUser();
 
+        if (blockPersonalizedFeedRef.current) {
+          return;
+        }
+
         if (
           !user?.onboarding_completed ||
           user.preferred_topics.length === 0
@@ -378,7 +383,7 @@ export default function NewsExplorer({
           (category) => category.label === preferredTopic
         );
 
-        if (!preferredCategory) {
+        if (!preferredCategory || blockPersonalizedFeedRef.current) {
           return;
         }
 
@@ -396,7 +401,26 @@ export default function NewsExplorer({
 
     void applyPersonalizedFeed();
 
-    function handleAuthUpdate() {
+    async function resetToAllTopics() {
+      blockPersonalizedFeedRef.current = true;
+      personalizedFeedLoadedRef.current = false;
+      setPreferredTopicLabels([]);
+      setActiveCategory("ALL");
+      setNewsRankMode("latest");
+      setTrendingTopic(undefined);
+      await loadNews(undefined, "ALL");
+    }
+
+    function handleAuthUpdate(event: Event) {
+      if (
+        event instanceof CustomEvent &&
+        event.detail?.reason === "logout"
+      ) {
+        void resetToAllTopics();
+        return;
+      }
+
+      blockPersonalizedFeedRef.current = false;
       personalizedFeedLoadedRef.current = false;
       void applyPersonalizedFeed();
     }
