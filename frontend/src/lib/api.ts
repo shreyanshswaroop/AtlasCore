@@ -29,6 +29,27 @@ export type AuthResponse = {
 };
 
 const authTokenStorageKey = "atlascore_auth_token";
+const serverNewsRevalidateSeconds = 60;
+
+type NextFetchOptions = RequestInit & {
+  next?: {
+    revalidate: number;
+  };
+};
+
+function getNewsFetchOptions(): NextFetchOptions {
+  if (typeof window === "undefined") {
+    return {
+      next: {
+        revalidate: serverNewsRevalidateSeconds,
+      },
+    };
+  }
+
+  return {
+    cache: "no-store",
+  };
+}
 
 function getStoredAuthToken() {
   if (typeof window === "undefined") {
@@ -261,9 +282,7 @@ export async function getNews(
   url.searchParams.set("offset", String(offset));
   url.searchParams.set("sort", sort);
 
-  const response = await fetch(url.toString(), {
-    cache: "no-store",
-  });
+  const response = await fetch(url.toString(), getNewsFetchOptions());
 
   if (!response.ok) {
     const errorMessage = await response.text();

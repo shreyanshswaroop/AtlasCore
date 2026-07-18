@@ -229,7 +229,7 @@ export default function NewsExplorer({
   );
   const [hasLoadedLeaderboard, setHasLoadedLeaderboard] = useState(false);
   const [showNewsSkeleton, setShowNewsSkeleton] = useState(
-    initialView === "news"
+    initialView === "news" && initialItems.length === 0
   );
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
