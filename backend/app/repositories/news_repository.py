@@ -217,7 +217,10 @@ def build_topic_condition(topic: str):
 
     return or_(
         NewsItem.primary_topic == cleaned_topic,
-        NewsItem.topics.any(cleaned_topic),
+        (
+            NewsItem.primary_topic.is_(None)
+            & NewsItem.topics.any(cleaned_topic)
+        ),
     )
 
 

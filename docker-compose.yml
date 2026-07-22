@@ -25,5 +25,62 @@ services:
       timeout: 5s
       retries: 5
 
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+
+    container_name: atlascore-backend
+    restart: unless-stopped
+
+    env_file:
+      - path: ./backend/.env.docker
+        required: false
+
+    environment:
+      DATABASE_URL: postgresql+psycopg://atlascore:atlascore_password@postgres:5432/atlascore
+
+    ports:
+      - "8000:8000"
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "curl",
+          "--fail",
+          "http://localhost:8000/api/health"
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_BASE_URL: http://localhost:8000
+
+    container_name: atlascore-frontend
+    restart: unless-stopped
+
+    environment:
+      NEXT_PUBLIC_API_BASE_URL: http://localhost:8000
+      API_INTERNAL_BASE_URL: http://backend:8000
+
+    ports:
+      - "3000:3000"
+
+    depends_on:
+      backend:
+        condition: service_healthy    
+        
+
 volumes:
   atlascore_postgres_data:

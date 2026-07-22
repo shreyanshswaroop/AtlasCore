@@ -1,0 +1,66 @@
+# ========================
+# Environment Variables
+# ========================
+
+.env
+.env.*
+!.env.example
+
+# ========================
+# macOS
+# ========================
+
+.DS_Store
+
+# ========================
+# VS Code
+# ========================
+
+.vscode/settings.json
+
+# ========================
+# Terraform
+# ========================
+
+.terraform/
+terraform.tfstate
+terraform.tfstate.*
+*.tfvars
+crash.log
+
+# ========================
+# Logs
+# ========================
+
+*.log
+
+# ========================
+# Dependencies and build output
+# ========================
+
+node_modules/
+.next/
+dist/
+build/
+
+# ========================
+# Python
+# ========================
+
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+
+# ========================
+# Docker
+# ========================
+
+docker-compose.override.yml
+
+# ========================
+# Kubernetes
+# ========================
+
+*.secret.yaml

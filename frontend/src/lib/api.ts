@@ -10,8 +10,16 @@ import type {
   TrendingTopicsResponse,
 } from "@/types/news";
 
-const API_BASE_URL =
+const PUBLIC_API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000";
+const SERVER_API_BASE_URL =
+  process.env.API_INTERNAL_BASE_URL ?? PUBLIC_API_BASE_URL;
+
+function getApiBaseUrl() {
+  return typeof window === "undefined"
+    ? SERVER_API_BASE_URL
+    : PUBLIC_API_BASE_URL;
+}
 
 export type AuthUser = {
   id: number;
@@ -111,7 +119,7 @@ export async function signup(
   email: string,
   password: string
 ): Promise<AuthResponse> {
-  const response = await fetch(`${API_BASE_URL}/api/auth/signup`, {
+  const response = await fetch(`${getApiBaseUrl()}/api/auth/signup`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -140,7 +148,7 @@ export async function signin(
   email: string,
   password: string
 ): Promise<AuthResponse> {
-  const response = await fetch(`${API_BASE_URL}/api/auth/signin`, {
+  const response = await fetch(`${getApiBaseUrl()}/api/auth/signin`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -167,7 +175,7 @@ export async function signin(
 export async function logout(): Promise<void> {
   clearStoredAuthToken();
 
-  const response = await fetch(`${API_BASE_URL}/api/auth/logout`, {
+  const response = await fetch(`${getApiBaseUrl()}/api/auth/logout`, {
     method: "POST",
     credentials: "include",
   });
@@ -180,7 +188,7 @@ export async function logout(): Promise<void> {
 }
 
 export async function getCurrentUser(): Promise<AuthUser | null> {
-  const response = await fetch(`${API_BASE_URL}/api/auth/me`, {
+  const response = await fetch(`${getApiBaseUrl()}/api/auth/me`, {
     headers: {
       ...getAuthHeaders(),
     },
@@ -208,7 +216,7 @@ export async function completeOnboarding(
   preferredTopics: string[],
   preferredContentTypes: string[]
 ): Promise<AuthResponse> {
-  const response = await fetch(`${API_BASE_URL}/api/auth/onboarding`, {
+  const response = await fetch(`${getApiBaseUrl()}/api/auth/onboarding`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -237,7 +245,7 @@ export async function updateProfile(
   preferredTopics: string[],
   preferredContentTypes: string[]
 ): Promise<AuthResponse> {
-  const response = await fetch(`${API_BASE_URL}/api/auth/profile`, {
+  const response = await fetch(`${getApiBaseUrl()}/api/auth/profile`, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
@@ -268,7 +276,7 @@ export async function getNews(
   topic?: string,
   sort: "latest" | "upvotes" = "latest"
 ): Promise<NewsResponse> {
-  const url = new URL("/api/news", API_BASE_URL);
+  const url = new URL("/api/news", getApiBaseUrl());
 
   const cleanedQuery = query?.trim();
 
@@ -299,7 +307,7 @@ export async function getNewsCounts(
   topics: string[],
   sort: "latest" | "upvotes" = "latest"
 ): Promise<NewsCountsResponse> {
-  const url = new URL("/api/news/counts", API_BASE_URL);
+  const url = new URL("/api/news/counts", getApiBaseUrl());
 
   url.searchParams.set("sort", sort);
 
@@ -329,7 +337,7 @@ export async function getNewsCounts(
 export async function getTrendingTopics(
   limit = 8
 ): Promise<TrendingTopicsResponse> {
-  const url = new URL("/api/news/trending-topics", API_BASE_URL);
+  const url = new URL("/api/news/trending-topics", getApiBaseUrl());
 
   url.searchParams.set("limit", String(limit));
 
@@ -354,7 +362,7 @@ export async function getNewsById(
   const encodedNewsId = encodeURIComponent(newsId);
 
   const response = await fetch(
-    `${API_BASE_URL}/api/news/${encodedNewsId}`,
+    `${getApiBaseUrl()}/api/news/${encodedNewsId}`,
     {
       cache: "no-store",
     }
@@ -370,7 +378,7 @@ export async function getNewsById(
 }
 
 export async function getSyncStatus(): Promise<NewsSyncStatus> {
-  const response = await fetch(`${API_BASE_URL}/api/sync`, {
+  const response = await fetch(`${getApiBaseUrl()}/api/sync`, {
     cache: "no-store",
   });
 
@@ -387,7 +395,7 @@ export async function getCompanyLeaderboard(
   limit = 150,
   globalRank = true
 ): Promise<CompanyLeaderboardResponse> {
-  const url = new URL("/api/companies/leaderboard", API_BASE_URL);
+  const url = new URL("/api/companies/leaderboard", getApiBaseUrl());
 
   url.searchParams.set("limit", String(limit));
   url.searchParams.set("global_rank", String(globalRank));
@@ -415,7 +423,7 @@ export async function getCompanyNews(
   const encodedCompanySlug = encodeURIComponent(companySlug);
   const url = new URL(
     `/api/companies/${encodedCompanySlug}/news`,
-    API_BASE_URL
+    getApiBaseUrl()
   );
 
   url.searchParams.set("limit", String(limit));
