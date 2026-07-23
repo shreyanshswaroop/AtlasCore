@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import {
+  type AuthUser,
   getCompanyLeaderboard,
   getCurrentUser,
   getNews,
@@ -147,17 +148,14 @@ function NewsCardSkeleton() {
           <div className="skeleton-shimmer h-4 w-[72%]" />
         </div>
 
-        <div className="mt-auto flex gap-4 pt-8">
-          <div className="skeleton-shimmer h-3.5 w-20" />
-          <div className="skeleton-shimmer h-3.5 w-32" />
-        </div>
+        <div className="mt-auto pt-8" />
       </div>
 
       <div className="flex items-center justify-between border-t border-zinc-800 px-5 py-5">
         <div className="skeleton-shimmer h-8 w-24" />
-        <div className="flex gap-2">
+        <div className="flex items-center gap-3">
+          <div className="skeleton-shimmer h-5 w-4" />
           <div className="skeleton-shimmer h-8 w-12" />
-          <div className="skeleton-shimmer h-8 w-8" />
         </div>
       </div>
     </article>
@@ -219,6 +217,9 @@ export default function NewsExplorer({
   const [activeCategory, setActiveCategory] = useState("ALL");
   const [activeSearchQuery, setActiveSearchQuery] = useState<string | undefined>();
   const [activeTopic, setActiveTopic] = useState<string | undefined>();
+  const [selectedLeaderboardTopics, setSelectedLeaderboardTopics] = useState<
+    string[]
+  >([]);
   const [trendingTopic, setTrendingTopic] = useState<string | undefined>();
   const [nextOffset, setNextOffset] = useState(initialItems.length);
   const [hasMoreItems, setHasMoreItems] = useState(
@@ -236,6 +237,7 @@ export default function NewsExplorer({
   const [error, setError] = useState("");
   const [syncStatus, setSyncStatus] = useState(initialSyncStatus);
   const [preferredTopicLabels, setPreferredTopicLabels] = useState<string[]>([]);
+  const [currentUser, setCurrentUser] = useState<AuthUser | null>(null);
   const personalizedFeedLoadedRef = useRef(false);
   const blockPersonalizedFeedRef = useRef(false);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
@@ -277,6 +279,27 @@ export default function NewsExplorer({
       setError("Unable to load news. Make sure the backend is running.");
     } finally {
       setIsLoading(false);
+    }
+  }
+
+  async function loadLeaderboard(topics: string[]) {
+    try {
+      setActiveView("leaderboard");
+      setShowLeaderboardSkeleton(true);
+      setError("");
+
+      const [data] = await Promise.all([
+        getCompanyLeaderboard(150, true, topics),
+        wait(minimumSkeletonDuration),
+      ]);
+
+      setLeaderboardItems(data.items);
+      setHasLoadedLeaderboard(true);
+    } catch (leaderboardError) {
+      console.error(leaderboardError);
+      setError("Unable to load company leaderboard.");
+    } finally {
+      setShowLeaderboardSkeleton(false);
     }
   }
 
@@ -359,10 +382,12 @@ export default function NewsExplorer({
           !user?.onboarding_completed ||
           user.preferred_topics.length === 0
         ) {
+          setCurrentUser(user);
           setPreferredTopicLabels([]);
           return;
         }
 
+        setCurrentUser(user);
         const availablePreferredTopics = user.preferred_topics.filter((topic) =>
           categories.some((category) => category.label === topic)
         );
@@ -405,6 +430,7 @@ export default function NewsExplorer({
       blockPersonalizedFeedRef.current = true;
       personalizedFeedLoadedRef.current = false;
       setPreferredTopicLabels([]);
+      setCurrentUser(null);
       setActiveCategory("ALL");
       setNewsRankMode("latest");
       setTrendingTopic(undefined);
@@ -431,6 +457,19 @@ export default function NewsExplorer({
       window.removeEventListener("atlascore-auth-updated", handleAuthUpdate);
     };
   }, [initialQuery, initialView]);
+
+  function handleBookmarkChange(newsId: string, isBookmarked: boolean) {
+    setItems((currentItems) =>
+      currentItems.map((item) =>
+        item.id === newsId
+          ? {
+              ...item,
+              is_bookmarked: isBookmarked,
+            }
+          : item
+      )
+    );
+  }
 
   useEffect(() => {
     const topicLabels = categories
@@ -472,7 +511,7 @@ export default function NewsExplorer({
     let isMounted = true;
 
     Promise.all([
-      getCompanyLeaderboard(150, true),
+      getCompanyLeaderboard(150, true, selectedLeaderboardTopics),
       wait(minimumSkeletonDuration),
     ])
       .then(([data]) => {
@@ -499,7 +538,7 @@ export default function NewsExplorer({
     return () => {
       isMounted = false;
     };
-  }, [activeView, hasLoadedLeaderboard]);
+  }, [activeView, hasLoadedLeaderboard, selectedLeaderboardTopics]);
 
   useEffect(() => {
     let isMounted = true;
@@ -528,6 +567,22 @@ export default function NewsExplorer({
   }, []);
 
   async function handleCategoryChange(category: CategoryFilter) {
+    if (activeView === "leaderboard") {
+      const nextTopics =
+        category.label === "ALL"
+          ? []
+          : selectedLeaderboardTopics.includes(category.label)
+            ? selectedLeaderboardTopics.filter(
+                (topic) => topic !== category.label
+              )
+            : [...selectedLeaderboardTopics, category.label];
+
+      setSelectedLeaderboardTopics(nextTopics);
+      setActiveCategory(nextTopics.length === 0 ? "ALL" : nextTopics[0]);
+      await loadLeaderboard(nextTopics);
+      return;
+    }
+
     setActiveCategory(category.label);
     setNewsRankMode("latest");
     setTrendingTopic(undefined);
@@ -608,7 +663,11 @@ export default function NewsExplorer({
       return (
         <div className="border border-dashed border-zinc-800 px-6 py-20 text-center">
           <h3 className="text-2xl text-white">No companies found</h3>
-          <p className="mt-3 text-sm text-zinc-500">The company catalog is empty.</p>
+          <p className="mt-3 text-sm text-zinc-500">
+            {selectedLeaderboardTopics.length > 0
+              ? "No companies matched the selected topics."
+              : "The company catalog is empty."}
+          </p>
         </div>
       );
     }
@@ -662,12 +721,14 @@ export default function NewsExplorer({
           <p className="mb-4 font-mono text-xs font-normal uppercase tracking-[0.11em] text-zinc-600">Topics</p>
           <CategoryFilters
             activeCategory={activeCategory}
+            activeCategories={selectedLeaderboardTopics}
             counts={categoryCounts}
             onCategoryChange={handleCategoryChange}
-            disabled={isLoading}
-            loading={isLoading || showNewsSkeleton || showLeaderboardSkeleton}
+            disabled={isLoading || showLeaderboardSkeleton}
+            loading={isLoading || showNewsSkeleton}
             hideEmpty={false}
             visibleLabels={preferredTopicLabels}
+            multiSelect={activeView === "leaderboard"}
           />
           <div className="mt-8 hidden border-t border-zinc-800 pt-5 font-mono text-[10px] uppercase leading-5 tracking-[0.12em] text-zinc-700 lg:block">
             <p className="normal-case tracking-normal text-zinc-500">
@@ -780,6 +841,9 @@ export default function NewsExplorer({
                     item={item}
                     index={index}
                     variant={newsLayout}
+                    showBookmarkControl
+                    requiresSignIn={currentUser === null}
+                    onBookmarkChange={handleBookmarkChange}
                   />
                 ))}
               </div>

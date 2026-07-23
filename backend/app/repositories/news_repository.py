@@ -1,10 +1,12 @@
 from collections.abc import Sequence
 from datetime import datetime
 
-from sqlalchemy import desc, func, or_, select
+from sqlalchemy import delete, desc, func, or_, select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
 
+from app.models.bookmark_list import BookmarkList
+from app.models.bookmarked_news_item import BookmarkedNewsItem
 from app.models.news_item import NewsItem
 
 
@@ -133,6 +135,35 @@ def get_news_by_topic(
     return db.scalars(statement).all()
 
 
+def get_news_by_topics(
+    db: Session,
+    topics: Sequence[str],
+    published_after: datetime | None = None,
+) -> Sequence[NewsItem]:
+    cleaned_topics = [
+        topic.strip()
+        for topic in topics
+        if topic.strip()
+    ]
+
+    if not cleaned_topics:
+        return []
+
+    statement = select(NewsItem).where(
+        or_(
+            *(
+                build_topic_condition(topic)
+                for topic in cleaned_topics
+            )
+        )
+    )
+
+    if published_after is not None:
+        statement = statement.where(NewsItem.published_at >= published_after)
+
+    return db.scalars(statement).all()
+
+
 def get_news_by_id(
     db: Session,
     news_id: int,
@@ -140,6 +171,144 @@ def get_news_by_id(
     statement = select(NewsItem).where(NewsItem.id == news_id)
 
     return db.scalar(statement)
+
+
+def get_bookmarked_news_ids(
+    db: Session,
+    user_id: int,
+) -> set[int]:
+    statement = select(BookmarkedNewsItem.news_item_id).where(
+        BookmarkedNewsItem.user_id == user_id,
+    )
+
+    return set(db.scalars(statement).all())
+
+
+def get_bookmarked_news(
+    db: Session,
+    user_id: int,
+    limit: int,
+    offset: int,
+    list_id: int | None = None,
+) -> Sequence[NewsItem]:
+    statement = (
+        select(NewsItem)
+        .join(
+            BookmarkedNewsItem,
+            BookmarkedNewsItem.news_item_id == NewsItem.id,
+        )
+        .where(BookmarkedNewsItem.user_id == user_id)
+    )
+
+    if list_id is not None:
+        statement = statement.where(BookmarkedNewsItem.list_id == list_id)
+
+    statement = statement.order_by(desc(BookmarkedNewsItem.created_at)).offset(offset).limit(limit)
+
+    return db.scalars(statement).all()
+
+
+def count_bookmarked_news(
+    db: Session,
+    user_id: int,
+    list_id: int | None = None,
+) -> int:
+    statement = (
+        select(func.count())
+        .select_from(BookmarkedNewsItem)
+        .where(BookmarkedNewsItem.user_id == user_id)
+    )
+
+    if list_id is not None:
+        statement = statement.where(BookmarkedNewsItem.list_id == list_id)
+
+    return db.scalar(statement) or 0
+
+
+def get_bookmark_lists(
+    db: Session,
+    user_id: int,
+) -> Sequence[BookmarkList]:
+    statement = (
+        select(BookmarkList)
+        .where(BookmarkList.user_id == user_id)
+        .order_by(desc(BookmarkList.updated_at), BookmarkList.name)
+    )
+
+    return db.scalars(statement).all()
+
+
+def get_bookmark_list_by_id(
+    db: Session,
+    user_id: int,
+    list_id: int,
+) -> BookmarkList | None:
+    statement = select(BookmarkList).where(
+        BookmarkList.id == list_id,
+        BookmarkList.user_id == user_id,
+    )
+
+    return db.scalar(statement)
+
+
+def get_bookmark_list_by_name(
+    db: Session,
+    user_id: int,
+    name: str,
+) -> BookmarkList | None:
+    statement = select(BookmarkList).where(
+        BookmarkList.user_id == user_id,
+        func.lower(BookmarkList.name) == name.strip().lower(),
+    )
+
+    return db.scalar(statement)
+
+
+def create_bookmark_list(
+    db: Session,
+    user_id: int,
+    name: str,
+) -> BookmarkList:
+    bookmark_list = BookmarkList(
+        user_id=user_id,
+        name=name.strip(),
+    )
+    db.add(bookmark_list)
+    db.flush()
+
+    return bookmark_list
+
+
+def bookmark_news_item(
+    db: Session,
+    user_id: int,
+    news_item_id: int,
+    list_id: int | None = None,
+) -> None:
+    statement = insert(BookmarkedNewsItem).values(
+        user_id=user_id,
+        news_item_id=news_item_id,
+        list_id=list_id,
+    )
+    statement = statement.on_conflict_do_update(
+        constraint="uq_bookmarked_news_items_user_news",
+        set_={
+            "list_id": statement.excluded.list_id,
+        },
+    )
+    db.execute(statement)
+
+
+def remove_bookmarked_news_item(
+    db: Session,
+    user_id: int,
+    news_item_id: int,
+) -> None:
+    statement = delete(BookmarkedNewsItem).where(
+        BookmarkedNewsItem.user_id == user_id,
+        BookmarkedNewsItem.news_item_id == news_item_id,
+    )
+    db.execute(statement)
 
 
 def count_news(

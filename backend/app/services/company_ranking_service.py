@@ -200,6 +200,64 @@ def build_catalog_rankings() -> list[RankedCompany]:
     ]
 
 
+def rank_companies_from_topic_news(
+    news_items,
+    topics: list[str],
+    limit: int,
+) -> list[RankedCompany]:
+    topic_label = ", ".join(topics)
+    signals = [
+        RankingSignal(
+            title=" ".join(
+                part
+                for part in (
+                    item.title,
+                    item.summary,
+                    item.source_name,
+                )
+                if part
+            ),
+            url=item.source_url or "",
+            domain=urlparse(item.source_url or "").netloc,
+            published_at=item.published_at,
+            source="atlascore_topic_news",
+            source_weight=1.0,
+        )
+        for item in news_items
+    ]
+    companies = COMPANY_ENTITIES[
+        : settings.atlascore_company_ranking_max_companies
+    ]
+    ranked_companies = [
+        RankedCompany(
+            company=company,
+            global_mentions=count_company_mentions(company, signals),
+            importance_score=calculate_company_importance_score(
+                company,
+                signals,
+            ),
+            rank_basis=f"AtlasCore topic-filtered news signal: {topic_label}",
+        )
+        for company in companies
+    ]
+
+    ranked_companies = [
+        ranked_company
+        for ranked_company in ranked_companies
+        if ranked_company.global_mentions > 0
+    ]
+    ranked_companies.sort(
+        key=lambda item: (
+            item.importance_score,
+            item.global_mentions,
+            -companies.index(item.company),
+        ),
+        reverse=True,
+    )
+
+    return ranked_companies[:limit]
+
+
 def company_slug(name: str) -> str:
     return re.sub(
         r"[^a-z0-9]+",

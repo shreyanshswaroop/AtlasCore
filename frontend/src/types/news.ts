@@ -14,6 +14,7 @@ export type NewsItem = {
   topic_confidence?: number | null;
   topic_reason?: string | null;
   upvote_count?: number;
+  is_bookmarked?: boolean;
 };
 
 export type NewsResponse = {

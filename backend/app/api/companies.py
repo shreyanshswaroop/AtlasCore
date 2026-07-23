@@ -1,14 +1,17 @@
 import re
+from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from app.core.company_catalog import COMPANY_ENTITIES, favicon_url
+from app.core.config import get_settings
 from app.core.database import get_db
-from app.repositories.news_repository import search_news
+from app.repositories.news_repository import get_news_by_topics, search_news
 from app.api.news import serialize_news_item
 from app.services.company_ranking_service import (
     get_ranked_companies_from_snapshot,
+    rank_companies_from_topic_news,
     refresh_company_leaderboard_snapshot,
 )
 
@@ -17,6 +20,7 @@ router = APIRouter(
     prefix="/api/companies",
     tags=["Companies"],
 )
+settings = get_settings()
 
 
 def company_slug(name: str) -> str:
@@ -86,8 +90,33 @@ def get_company_leaderboard(
         default=False,
         description="Recalculate and persist the company ranking snapshot.",
     ),
+    topics: list[str] = Query(
+        default=[],
+        description="Topic labels used to rank companies from matching news.",
+    ),
+    db: Session = Depends(get_db),
 ) -> dict:
-    if global_rank:
+    cleaned_topics = [
+        topic.strip().upper()
+        for topic in topics
+        if topic.strip() and topic.strip().upper() != "ALL"
+    ]
+
+    if cleaned_topics:
+        published_after = datetime.now(timezone.utc) - timedelta(
+            days=settings.atlascore_news_window_days,
+        )
+        ranked_companies = rank_companies_from_topic_news(
+            news_items=get_news_by_topics(
+                db=db,
+                topics=cleaned_topics,
+                published_after=published_after,
+            ),
+            topics=cleaned_topics,
+            limit=limit,
+        )
+        source = "topic_filtered_news_signal"
+    elif global_rank:
         if refresh:
             ranked_companies, source = refresh_company_leaderboard_snapshot()
         else:

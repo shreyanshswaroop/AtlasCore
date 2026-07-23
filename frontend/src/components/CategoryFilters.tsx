@@ -1,11 +1,13 @@
 interface CategoryFiltersProps {
   activeCategory: string;
+  activeCategories?: string[];
   onCategoryChange: (category: CategoryFilter) => void;
   counts?: Record<string, number>;
   disabled?: boolean;
   loading?: boolean;
   hideEmpty?: boolean;
   visibleLabels?: string[];
+  multiSelect?: boolean;
 }
 
 export type CategoryFilter = {
@@ -291,12 +293,14 @@ function CategoryFiltersSkeleton() {
 
 export default function CategoryFilters({
   activeCategory,
+  activeCategories,
   onCategoryChange,
   counts,
   disabled = false,
   loading = false,
   hideEmpty = false,
   visibleLabels,
+  multiSelect = false,
 }: CategoryFiltersProps) {
   if (loading) {
     return <CategoryFiltersSkeleton />;
@@ -319,13 +323,17 @@ export default function CategoryFilters({
   return (
     <div className="flex gap-2 overflow-x-auto pb-2 lg:block lg:max-h-[620px] lg:space-y-0.5 lg:overflow-y-auto lg:overflow-x-hidden lg:pb-0 lg:pr-1">
       {visibleCategories.map((category) => {
-        const isActive = activeCategory === category.label;
+        const isActive = multiSelect
+          ? activeCategories?.includes(category.label) ||
+            (category.label === "ALL" && (activeCategories?.length ?? 0) === 0)
+          : activeCategory === category.label;
         const count = counts?.[category.label];
 
         return (
           <button
             key={category.label}
             type="button"
+            aria-pressed={isActive}
             disabled={disabled}
             onClick={() => onCategoryChange(category)}
             className={`group flex min-w-max items-center justify-between gap-3 border px-3 py-2.5 text-left font-mono text-xs font-bold uppercase tracking-[0.11em] lg:w-full lg:min-w-0 ${

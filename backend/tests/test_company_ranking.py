@@ -11,6 +11,7 @@ from app.services.company_ranking_service import (
     calculate_company_importance_score,
     count_company_mentions,
     dedupe_company_aliases,
+    rank_companies_from_topic_news,
     refresh_company_leaderboard_snapshot_if_stale,
     score_article_signal,
 )
@@ -111,6 +112,36 @@ class CompanyRankingTests(unittest.TestCase):
             score_article_signal(launch_article),
             score_article_signal(plain_article),
         )
+
+    def test_topic_news_ranking_only_returns_companies_with_mentions(self) -> None:
+        nvidia_story = MagicMock(
+            title="NVIDIA releases new CUDA inference tools",
+            summary="Developer workflow update for AI systems",
+            source_name="NVIDIA Blog",
+            source_url="https://blogs.nvidia.com/cuda",
+            published_at=datetime.now(timezone.utc),
+        )
+        openai_story = MagicMock(
+            title="OpenAI expands ChatGPT agent features",
+            summary="New software agent capabilities for teams",
+            source_name="OpenAI",
+            source_url="https://openai.com/news/agents",
+            published_at=datetime.now(timezone.utc),
+        )
+
+        ranked_companies = rank_companies_from_topic_news(
+            news_items=[nvidia_story, openai_story],
+            topics=["DEVELOPMENT", "AGENTS"],
+            limit=10,
+        )
+        company_names = {
+            ranked_company.company.name
+            for ranked_company in ranked_companies
+        }
+
+        self.assertIn("NVIDIA", company_names)
+        self.assertIn("OpenAI", company_names)
+        self.assertNotIn("Anthropic", company_names)
 
     def test_startup_refresh_skips_fresh_snapshot(self) -> None:
         fresh_snapshot_time = datetime.now(timezone.utc)

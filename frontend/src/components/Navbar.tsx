@@ -219,6 +219,14 @@ export default function Navbar() {
                 {item.label}
               </Link>
             ))}
+            {currentUser && (
+              <Link
+                href="/bookmarks"
+                className="font-mono text-[13px] font-bold uppercase tracking-[0.16em] text-zinc-500 hover:text-zinc-100 focus-visible:text-zinc-100"
+              >
+                Bookmarks
+              </Link>
+            )}
           </div>
         </div>
 
@@ -417,6 +425,18 @@ export default function Navbar() {
                             ⚙
                           </span>
                           Settings
+                        </Link>
+
+                        <Link
+                          href="/bookmarks"
+                          role="menuitem"
+                          onClick={() => setIsProfileMenuOpen(false)}
+                          className="flex h-10 items-center gap-3 px-3 font-mono text-[11px] uppercase tracking-[0.12em] text-zinc-400 hover:bg-zinc-900 hover:text-white"
+                        >
+                          <span aria-hidden="true" className="w-4 text-base">
+                            ★
+                          </span>
+                          Bookmarks
                         </Link>
 
                         <Link

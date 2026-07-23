@@ -36,6 +36,23 @@ export type AuthResponse = {
   access_token?: string | null;
 };
 
+export type BookmarkList = {
+  id: number;
+  name: string;
+  item_count: number | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type BookmarkListsResponse = {
+  count: number;
+  items: BookmarkList[];
+};
+
+export type BookmarkListResponse = {
+  item: BookmarkList;
+};
+
 const authTokenStorageKey = "atlascore_auth_token";
 const serverNewsRevalidateSeconds = 60;
 
@@ -290,7 +307,13 @@ export async function getNews(
   url.searchParams.set("offset", String(offset));
   url.searchParams.set("sort", sort);
 
-  const response = await fetch(url.toString(), getNewsFetchOptions());
+  const response = await fetch(url.toString(), {
+    ...getNewsFetchOptions(),
+    headers: {
+      ...getAuthHeaders(),
+    },
+    credentials: "include",
+  });
 
   if (!response.ok) {
     const errorMessage = await response.text();
@@ -301,6 +324,149 @@ export async function getNews(
   }
 
   return response.json() as Promise<NewsResponse>;
+}
+
+export async function getBookmarkedNews(
+  limit = 24,
+  offset = 0,
+  listId?: number
+): Promise<NewsResponse> {
+  const url = new URL("/api/news/bookmarks", getApiBaseUrl());
+
+  url.searchParams.set("limit", String(limit));
+  url.searchParams.set("offset", String(offset));
+
+  if (listId) {
+    url.searchParams.set("list_id", String(listId));
+  }
+
+  const response = await fetch(url.toString(), {
+    headers: {
+      ...getAuthHeaders(),
+    },
+    credentials: "include",
+    cache: "no-store",
+  });
+
+  if (response.status === 401) {
+    return {
+      query: "bookmarks",
+      count: 0,
+      items: [],
+    };
+  }
+
+  if (!response.ok) {
+    const errorMessage = await response.text();
+
+    throw new Error(
+      errorMessage || `Failed to fetch bookmarks: ${response.status}`
+    );
+  }
+
+  return response.json() as Promise<NewsResponse>;
+}
+
+export async function getBookmarkLists(): Promise<BookmarkListsResponse> {
+  const response = await fetch(`${getApiBaseUrl()}/api/news/bookmark-lists`, {
+    headers: {
+      ...getAuthHeaders(),
+    },
+    credentials: "include",
+    cache: "no-store",
+  });
+
+  if (response.status === 401) {
+    return {
+      count: 0,
+      items: [],
+    };
+  }
+
+  if (!response.ok) {
+    throw new Error(
+      await getErrorMessage(response, `Failed to fetch bookmark lists: ${response.status}`)
+    );
+  }
+
+  return response.json() as Promise<BookmarkListsResponse>;
+}
+
+export async function createBookmarkList(
+  name: string
+): Promise<BookmarkListResponse> {
+  const response = await fetch(`${getApiBaseUrl()}/api/news/bookmark-lists`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...getAuthHeaders(),
+    },
+    credentials: "include",
+    body: JSON.stringify({
+      name,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(
+      await getErrorMessage(response, `Failed to create bookmark list: ${response.status}`)
+    );
+  }
+
+  return response.json() as Promise<BookmarkListResponse>;
+}
+
+export async function saveNewsBookmark(
+  newsId: string,
+  options?: {
+    listId?: number;
+    listName?: string;
+  }
+): Promise<void> {
+  const body =
+    options?.listId || options?.listName
+      ? JSON.stringify({
+          list_id: options.listId,
+          list_name: options.listName,
+        })
+      : undefined;
+  const response = await fetch(
+    `${getApiBaseUrl()}/api/news/bookmarks/${encodeURIComponent(newsId)}`,
+    {
+      method: "POST",
+      headers: {
+        ...(body ? { "Content-Type": "application/json" } : {}),
+        ...getAuthHeaders(),
+      },
+      credentials: "include",
+      body,
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error(
+      await getErrorMessage(response, `Failed to save bookmark: ${response.status}`)
+    );
+  }
+}
+
+export async function removeNewsBookmark(newsId: string): Promise<void> {
+  const response = await fetch(
+    `${getApiBaseUrl()}/api/news/bookmarks/${encodeURIComponent(newsId)}`,
+    {
+      method: "DELETE",
+      headers: {
+        ...getAuthHeaders(),
+      },
+      credentials: "include",
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error(
+      await getErrorMessage(response, `Failed to remove bookmark: ${response.status}`)
+    );
+  }
 }
 
 export async function getNewsCounts(
@@ -364,6 +530,10 @@ export async function getNewsById(
   const response = await fetch(
     `${getApiBaseUrl()}/api/news/${encodedNewsId}`,
     {
+      headers: {
+        ...getAuthHeaders(),
+      },
+      credentials: "include",
       cache: "no-store",
     }
   );
@@ -393,12 +563,20 @@ export async function getSyncStatus(): Promise<NewsSyncStatus> {
 
 export async function getCompanyLeaderboard(
   limit = 150,
-  globalRank = true
+  globalRank = true,
+  topics: string[] = []
 ): Promise<CompanyLeaderboardResponse> {
   const url = new URL("/api/companies/leaderboard", getApiBaseUrl());
 
   url.searchParams.set("limit", String(limit));
   url.searchParams.set("global_rank", String(globalRank));
+  topics.forEach((topic) => {
+    const cleanedTopic = topic.trim();
+
+    if (cleanedTopic) {
+      url.searchParams.append("topics", cleanedTopic);
+    }
+  });
 
   const response = await fetch(url.toString(), {
     cache: "no-store",
