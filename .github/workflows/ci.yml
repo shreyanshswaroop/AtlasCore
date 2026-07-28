@@ -71,7 +71,7 @@ jobs:
           NEXT_PUBLIC_API_BASE_URL: http://localhost:8000
           INTERNAL_API_BASE_URL: http://backend:8000
 
-    docker:
+  docker:
     name: Docker Build and Security Scan
     runs-on: ubuntu-latest
 
