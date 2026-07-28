@@ -33,7 +33,15 @@ ENV HOSTNAME=0.0.0.0
 ENV PORT=3000
 
 RUN addgroup --system --gid 1001 nodejs \
-    && adduser --system --uid 1001 nextjs
+    && adduser --system --uid 1001 nextjs \
+    && rm -rf /usr/local/lib/node_modules/npm \
+    && rm -f /usr/local/bin/npm \
+    && rm -f /usr/local/bin/npx \
+    && rm -f /usr/local/bin/corepack \
+    && rm -f /usr/local/bin/yarn \
+    && rm -f /usr/local/bin/yarnpkg \
+    && rm -f /usr/local/bin/pnpm \
+    && rm -f /usr/local/bin/pnpx
 
 COPY --from=builder /app/public ./public
 
