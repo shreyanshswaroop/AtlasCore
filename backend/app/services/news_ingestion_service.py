@@ -100,6 +100,72 @@ class OpenGraphImageParser(HTMLParser):
             self.image_url = attributes.get("content")
 
 
+class ArticleTextParser(HTMLParser):
+    def __init__(self) -> None:
+        super().__init__(convert_charrefs=True)
+        self.article_depth = 0
+        self.capture_depth = 0
+        self.skip_depth = 0
+        self.current_text: list[str] = []
+        self.article_paragraphs: list[str] = []
+        self.fallback_paragraphs: list[str] = []
+
+    def handle_starttag(
+        self,
+        tag: str,
+        attrs: list[tuple[str, str | None]],
+    ) -> None:
+        normalized_tag = tag.lower()
+
+        if normalized_tag in {"script", "style", "noscript", "svg"}:
+            self.skip_depth += 1
+            return
+
+        if normalized_tag == "article":
+            self.article_depth += 1
+
+        if normalized_tag in {"p", "li", "blockquote"}:
+            self.capture_depth += 1
+            self.current_text = []
+
+    def handle_endtag(self, tag: str) -> None:
+        normalized_tag = tag.lower()
+
+        if normalized_tag in {"script", "style", "noscript", "svg"}:
+            self.skip_depth = max(0, self.skip_depth - 1)
+            return
+
+        if normalized_tag in {"p", "li", "blockquote"} and self.capture_depth:
+            paragraph = " ".join(" ".join(self.current_text).split())
+
+            if len(paragraph) >= 60:
+                if self.article_depth:
+                    self.article_paragraphs.append(paragraph)
+                else:
+                    self.fallback_paragraphs.append(paragraph)
+
+            self.capture_depth -= 1
+            self.current_text = []
+
+        if normalized_tag == "article":
+            self.article_depth = max(0, self.article_depth - 1)
+
+    def handle_data(self, data: str) -> None:
+        if self.skip_depth or not self.capture_depth:
+            return
+
+        cleaned_data = data.strip()
+
+        if cleaned_data:
+            self.current_text.append(cleaned_data)
+
+    def get_text(self) -> str:
+        paragraphs = self.article_paragraphs or self.fallback_paragraphs
+        unique_paragraphs = list(dict.fromkeys(paragraphs))
+
+        return "\n\n".join(unique_paragraphs)
+
+
 def ingest_news(
     db: Session,
     max_items_per_source: int = 30,
@@ -284,6 +350,12 @@ def build_news_item_data(
         or getattr(entry, "description", "")
     )
     source_url = getattr(entry, "link", source.feed_url)
+    content = extract_article_content(entry)
+
+    if not is_substantial_article_content(content, summary):
+        content = fetch_article_content(source_url) or content
+
+    content = content or summary
     if published_at is None:
         published_at = parse_entry_date(entry)
     classification = classify_news_item(
@@ -300,6 +372,7 @@ def build_news_item_data(
         "external_id": getattr(entry, "id", None) or source_url,
         "title": title,
         "summary": summary,
+        "content": content,
         "source_name": source.name,
         "source_url": source_url,
         "image_url": image_url,
@@ -316,6 +389,104 @@ def clean_html(value: str) -> str:
     without_tags = re.sub(r"<[^>]+>", " ", value)
 
     return " ".join(without_tags.split())
+
+
+def extract_article_content(entry) -> str:
+    content_values = getattr(entry, "content", None)
+
+    if isinstance(content_values, list):
+        article_parts = [
+            clean_article_text(
+                getattr(item, "value", "")
+                if not isinstance(item, dict)
+                else item.get("value", "")
+            )
+            for item in content_values
+        ]
+        article_content = "\n\n".join(
+            part
+            for part in article_parts
+            if part
+        )
+
+        if article_content:
+            return article_content
+
+    for field_name in ("full_content", "content", "summary_detail"):
+        value = getattr(entry, field_name, None)
+
+        if isinstance(value, dict):
+            value = value.get("value", "")
+
+        if isinstance(value, str):
+            article_content = clean_article_text(value)
+
+            if article_content:
+                return article_content
+
+    return ""
+
+
+def clean_article_text(value: str) -> str:
+    if not value:
+        return ""
+
+    with_breaks = re.sub(
+        r"</(p|div|section|article|h[1-6]|li|blockquote)>",
+        "\n\n",
+        value,
+        flags=re.IGNORECASE,
+    )
+    with_breaks = re.sub(
+        r"<br\s*/?>",
+        "\n",
+        with_breaks,
+        flags=re.IGNORECASE,
+    )
+    without_tags = re.sub(r"<[^>]+>", " ", with_breaks)
+    paragraphs = [
+        " ".join(paragraph.split())
+        for paragraph in re.split(r"\n\s*\n", without_tags)
+    ]
+
+    return "\n\n".join(
+        paragraph
+        for paragraph in paragraphs
+        if paragraph
+    )
+
+
+def is_substantial_article_content(
+    content: str,
+    summary: str,
+) -> bool:
+    cleaned_content = content.strip()
+
+    if not cleaned_content:
+        return False
+
+    return len(cleaned_content) >= max(len(summary.strip()) + 240, 600)
+
+
+def fetch_article_content(source_url: str) -> str | None:
+    try:
+        response = httpx.get(
+            source_url,
+            follow_redirects=True,
+            timeout=8,
+            headers={
+                "User-Agent": "AtlasCoreBot/0.1",
+            },
+        )
+        response.raise_for_status()
+    except Exception:
+        return None
+
+    parser = ArticleTextParser()
+    parser.feed(response.text[:600_000])
+    article_content = parser.get_text()
+
+    return article_content or None
 
 
 def parse_entry_date(entry) -> datetime:

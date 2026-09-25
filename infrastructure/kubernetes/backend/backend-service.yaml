@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Service
+
+metadata:
+  name: backend
+  namespace: atlascore
+  labels:
+    app: atlascore-backend
+
+spec:
+  type: NodePort
+
+  selector:
+    app: atlascore-backend
+
+  ports:
+    - name: http
+      port: 8000
+      targetPort: http
+      nodePort: 30081
+      protocol: TCP

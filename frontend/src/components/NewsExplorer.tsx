@@ -8,11 +8,10 @@ import {
   getCurrentUser,
   getNews,
   getNewsCounts,
-  getSyncStatus,
   getTrendingTopics,
 } from "@/lib/api";
 import type { CompanyLeaderboardItem } from "@/types/company";
-import type { NewsItem, NewsSyncStatus } from "@/types/news";
+import type { NewsItem } from "@/types/news";
 import CategoryFilters, {
   categories,
   type CategoryFilter,
@@ -22,9 +21,9 @@ import NewsCard from "./NewsCard";
 interface NewsExplorerProps {
   initialItems: NewsItem[];
   initialQuery: string;
+  initialTopic?: string;
   initialTotalCount: number;
   initialView?: ExplorerView;
-  initialSyncStatus: NewsSyncStatus | null;
 }
 
 type ExplorerView = "news" | "leaderboard";
@@ -47,22 +46,6 @@ const leaderboardSkeletonRows = [
 const minimumSkeletonDuration = 900;
 const minimumLoadMoreDuration = 2500;
 const itemsPerPage = 12;
-const syncStatusRefreshInterval = 60_000;
-const monthLabels = [
-  "Jan",
-  "Feb",
-  "Mar",
-  "Apr",
-  "May",
-  "Jun",
-  "Jul",
-  "Aug",
-  "Sep",
-  "Oct",
-  "Nov",
-  "Dec",
-];
-
 function wait(milliseconds: number) {
   return new Promise((resolve) => setTimeout(resolve, milliseconds));
 }
@@ -84,60 +67,15 @@ function hasCompanyAliases(item: CompanyLeaderboardItem) {
   return item.aliases.length > 0;
 }
 
-function formatLastSyncAt(syncStatus: NewsSyncStatus | null) {
-  const syncTime =
-    syncStatus?.last_sync?.finished_at ?? syncStatus?.last_sync?.started_at;
-
-  if (!syncTime) {
-    return "";
-  }
-
-  const date = new Date(syncTime);
-  const indiaTime = new Date(date.getTime() + 5.5 * 60 * 60 * 1000);
-  const day = String(indiaTime.getUTCDate()).padStart(2, "0");
-  const month = monthLabels[indiaTime.getUTCMonth()];
-  const hour24 = indiaTime.getUTCHours();
-  const hour12 = hour24 % 12 || 12;
-  const minutes = String(indiaTime.getUTCMinutes()).padStart(2, "0");
-  const meridiem = hour24 >= 12 ? "PM" : "AM";
-
-  return `${day} ${month}, ${hour12}:${minutes} ${meridiem}`;
-}
-
-function getSyncStatusLabel(
-  syncStatus: NewsSyncStatus | null,
-  formattedLastSyncAt: string
-) {
-  if (syncStatus?.is_running || syncStatus?.status === "running") {
-    return "Sync running";
-  }
-
-  if (syncStatus?.last_sync?.status === "failed") {
-    return formattedLastSyncAt
-      ? `Last sync failed: ${formattedLastSyncAt}`
-      : "Last sync failed";
-  }
-
-  if (formattedLastSyncAt) {
-    return `Last updated: ${formattedLastSyncAt}`;
-  }
-
-  if (syncStatus === null) {
-    return "Last updated unavailable";
-  }
-
-  return "Last updated: not synced this session";
-}
-
 function NewsCardSkeleton() {
   return (
     <article
       aria-hidden="true"
-      className="flex min-h-[510px] flex-col border border-zinc-800 bg-[#050505]"
+      className="flex min-h-[410px] flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white"
     >
-      <div className="skeleton-shimmer m-5 mb-0 h-48" />
+      <div className="skeleton-shimmer h-44" />
 
-      <div className="flex flex-1 flex-col px-5 py-7">
+      <div className="flex flex-1 flex-col px-5 py-6">
         <div className="flex items-center gap-3">
           <span className="skeleton-shimmer h-4 w-4" />
           <span className="skeleton-shimmer h-3.5 w-36" />
@@ -151,7 +89,7 @@ function NewsCardSkeleton() {
         <div className="mt-auto pt-8" />
       </div>
 
-      <div className="flex items-center justify-between border-t border-zinc-800 px-5 py-5">
+      <div className="flex items-center justify-between border-t border-zinc-100 px-5 py-5">
         <div className="skeleton-shimmer h-8 w-24" />
         <div className="flex items-center gap-3">
           <div className="skeleton-shimmer h-5 w-4" />
@@ -174,7 +112,7 @@ function LeaderboardSkeleton() {
       {leaderboardSkeletonRows.map((row, index) => (
         <div
           key={row}
-          className="faded-divider grid min-h-16 grid-cols-[70px_minmax(0,1fr)] items-center px-4 py-3 last:after:hidden sm:grid-cols-[90px_minmax(0,1fr)_minmax(180px,360px)]"
+          className="grid min-h-16 grid-cols-[70px_minmax(0,1fr)] items-center border-b border-zinc-100 px-4 py-3 last:border-b-0 sm:grid-cols-[90px_minmax(0,1fr)_minmax(180px,360px)]"
         >
           <span className="skeleton-shimmer h-4 w-9" />
 
@@ -197,9 +135,9 @@ function LeaderboardSkeleton() {
 export default function NewsExplorer({
   initialItems,
   initialQuery,
+  initialTopic,
   initialTotalCount,
   initialView = "news",
-  initialSyncStatus,
 }: NewsExplorerProps) {
   const [activeView, setActiveView] = useState<ExplorerView>(initialView);
   const [newsLayout, setNewsLayout] = useState<NewsLayout>("grid");
@@ -212,11 +150,15 @@ export default function NewsExplorer({
     ALL: initialTotalCount,
   });
   const [searchedQuery, setSearchedQuery] = useState(
-    initialView === "leaderboard" ? "ALL" : initialQuery
+    initialView === "leaderboard" ? "ALL" : initialTopic ?? initialQuery
   );
-  const [activeCategory, setActiveCategory] = useState("ALL");
-  const [activeSearchQuery, setActiveSearchQuery] = useState<string | undefined>();
-  const [activeTopic, setActiveTopic] = useState<string | undefined>();
+  const [activeCategory, setActiveCategory] = useState(initialTopic ?? "ALL");
+  const [activeSearchQuery, setActiveSearchQuery] = useState<string | undefined>(
+    initialTopic || initialQuery === "All news" ? undefined : initialQuery
+  );
+  const [activeTopic, setActiveTopic] = useState<string | undefined>(
+    initialTopic
+  );
   const [selectedLeaderboardTopics, setSelectedLeaderboardTopics] = useState<
     string[]
   >([]);
@@ -235,18 +177,10 @@ export default function NewsExplorer({
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [error, setError] = useState("");
-  const [syncStatus, setSyncStatus] = useState(initialSyncStatus);
-  const [preferredTopicLabels, setPreferredTopicLabels] = useState<string[]>([]);
   const [currentUser, setCurrentUser] = useState<AuthUser | null>(null);
-  const personalizedFeedLoadedRef = useRef(false);
   const blockPersonalizedFeedRef = useRef(false);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const loadMoreInFlightRef = useRef(false);
-  const formattedLastSyncAt = formatLastSyncAt(syncStatus);
-  const syncStatusLabel = getSyncStatusLabel(
-    syncStatus,
-    formattedLastSyncAt
-  );
 
   async function loadNews(
     searchQuery: string | undefined,
@@ -370,7 +304,7 @@ export default function NewsExplorer({
   }, [showNewsSkeleton]);
 
   useEffect(() => {
-    async function applyPersonalizedFeed() {
+    async function loadUser() {
       try {
         const user = await getCurrentUser();
 
@@ -378,58 +312,16 @@ export default function NewsExplorer({
           return;
         }
 
-        if (
-          !user?.onboarding_completed ||
-          user.preferred_topics.length === 0
-        ) {
-          setCurrentUser(user);
-          setPreferredTopicLabels([]);
-          return;
-        }
-
         setCurrentUser(user);
-        const availablePreferredTopics = user.preferred_topics.filter((topic) =>
-          categories.some((category) => category.label === topic)
-        );
-
-        setPreferredTopicLabels(availablePreferredTopics);
-
-        if (
-          personalizedFeedLoadedRef.current ||
-          initialView !== "news" ||
-          initialQuery !== "All news" ||
-          availablePreferredTopics.length === 0
-        ) {
-          return;
-        }
-
-        const preferredTopic = availablePreferredTopics[0];
-        const preferredCategory = categories.find(
-          (category) => category.label === preferredTopic
-        );
-
-        if (!preferredCategory || blockPersonalizedFeedRef.current) {
-          return;
-        }
-
-        personalizedFeedLoadedRef.current = true;
-        setActiveCategory(preferredCategory.label);
-        await loadNews(
-          preferredCategory.query,
-          `For you: ${preferredCategory.label}`,
-          preferredCategory.label
-        );
       } catch (authError) {
         console.error(authError);
       }
     }
 
-    void applyPersonalizedFeed();
+    void loadUser();
 
     async function resetToAllTopics() {
       blockPersonalizedFeedRef.current = true;
-      personalizedFeedLoadedRef.current = false;
-      setPreferredTopicLabels([]);
       setCurrentUser(null);
       setActiveCategory("ALL");
       setNewsRankMode("latest");
@@ -447,8 +339,7 @@ export default function NewsExplorer({
       }
 
       blockPersonalizedFeedRef.current = false;
-      personalizedFeedLoadedRef.current = false;
-      void applyPersonalizedFeed();
+      void loadUser();
     }
 
     window.addEventListener("atlascore-auth-updated", handleAuthUpdate);
@@ -456,7 +347,7 @@ export default function NewsExplorer({
     return () => {
       window.removeEventListener("atlascore-auth-updated", handleAuthUpdate);
     };
-  }, [initialQuery, initialView]);
+  }, []);
 
   function handleBookmarkChange(newsId: string, isBookmarked: boolean) {
     setItems((currentItems) =>
@@ -539,32 +430,6 @@ export default function NewsExplorer({
       isMounted = false;
     };
   }, [activeView, hasLoadedLeaderboard, selectedLeaderboardTopics]);
-
-  useEffect(() => {
-    let isMounted = true;
-
-    const refreshSyncStatus = async () => {
-      try {
-        const latestSyncStatus = await getSyncStatus();
-
-        if (isMounted) {
-          setSyncStatus(latestSyncStatus);
-        }
-      } catch (syncError) {
-        console.error(syncError);
-      }
-    };
-
-    const interval = window.setInterval(
-      refreshSyncStatus,
-      syncStatusRefreshInterval
-    );
-
-    return () => {
-      isMounted = false;
-      window.clearInterval(interval);
-    };
-  }, []);
 
   async function handleCategoryChange(category: CategoryFilter) {
     if (activeView === "leaderboard") {
@@ -661,8 +526,8 @@ export default function NewsExplorer({
   function renderLeaderboard() {
     if (leaderboardItems.length === 0) {
       return (
-        <div className="border border-dashed border-zinc-800 px-6 py-20 text-center">
-          <h3 className="text-2xl text-white">No companies found</h3>
+        <div className="rounded-2xl border border-dashed border-zinc-300 bg-white px-6 py-20 text-center">
+          <h3 className="text-2xl font-semibold text-zinc-950">No companies found</h3>
           <p className="mt-3 text-sm text-zinc-500">
             {selectedLeaderboardTopics.length > 0
               ? "No companies matched the selected topics."
@@ -673,19 +538,19 @@ export default function NewsExplorer({
     }
 
     return (
-      <div>
+      <div className="overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm">
         {leaderboardItems.map((item) => (
           <Link
             key={item.company}
             href={`/companies/${item.slug}`}
-            className="faded-divider grid min-h-16 grid-cols-[70px_minmax(0,1fr)] items-center px-4 py-3 last:after:hidden sm:grid-cols-[90px_minmax(0,1fr)_minmax(180px,360px)]"
+            className="grid min-h-16 grid-cols-[70px_minmax(0,1fr)] items-center border-b border-zinc-100 px-4 py-3 transition hover:bg-zinc-50 last:border-b-0 sm:grid-cols-[90px_minmax(0,1fr)_minmax(180px,360px)]"
           >
-            <span className="font-mono text-sm text-zinc-500">
+            <span className="text-sm font-semibold text-zinc-400">
               #{item.rank}
             </span>
 
             <div className="flex min-w-0 items-center gap-3">
-              <span className="grid h-9 w-9 shrink-0 place-items-center border border-zinc-700 bg-zinc-900 font-mono text-[11px] font-bold uppercase text-white">
+              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-zinc-200 bg-zinc-50 text-[11px] font-bold uppercase text-zinc-700">
                 {item.logo_url ? (
                   <img
                     src={item.logo_url}
@@ -696,12 +561,12 @@ export default function NewsExplorer({
                   getCompanyInitials(item.company)
                 )}
               </span>
-              <span className="truncate text-base font-medium text-zinc-100">
+              <span className="truncate text-base font-semibold text-zinc-950">
                 {item.company}
               </span>
             </div>
 
-            <span className="hidden truncate font-mono text-xs uppercase tracking-[0.08em] text-zinc-500 sm:block">
+            <span className="hidden truncate text-sm text-zinc-500 sm:block">
               {hasCompanyAliases(item)
                 ? formatCompanyAliases(item)
                 : item.domain || "Company"}
@@ -713,41 +578,44 @@ export default function NewsExplorer({
   }
 
   return (
-    <section id="discover" className="mx-auto max-w-[1500px] px-5 pb-10 pt-6 sm:px-8 sm:pb-14 sm:pt-8">
-      {error && <div className="mb-8 border border-red-900 bg-red-950/30 px-5 py-4 font-mono text-xs text-red-300">{error}</div>}
+    <section id="discover" className="mx-auto max-w-[465px] px-5 pb-10 pt-8 sm:max-w-[489px] sm:px-8 sm:pb-16 sm:pt-10 md:max-w-[934px] xl:max-w-[1379px]">
+      {error && <div className="mb-8 rounded-xl border border-red-200 bg-red-50 px-5 py-4 text-sm font-semibold text-red-700">{error}</div>}
 
-      <div className="grid gap-8 lg:grid-cols-[270px_minmax(0,1fr)]">
-        <aside className="lg:sticky lg:top-20 lg:max-h-[calc(100vh-6rem)] lg:self-start lg:overflow-y-auto">
-          <p className="mb-4 font-mono text-xs font-normal uppercase tracking-[0.11em] text-zinc-600">Topics</p>
-          <CategoryFilters
-            activeCategory={activeCategory}
-            activeCategories={selectedLeaderboardTopics}
-            counts={categoryCounts}
-            onCategoryChange={handleCategoryChange}
-            disabled={isLoading || showLeaderboardSkeleton}
-            loading={isLoading || showNewsSkeleton}
-            hideEmpty={false}
-            visibleLabels={preferredTopicLabels}
-            multiSelect={activeView === "leaderboard"}
-          />
-          <div className="mt-8 hidden border-t border-zinc-800 pt-5 font-mono text-[10px] uppercase leading-5 tracking-[0.12em] text-zinc-700 lg:block">
-            <p className="normal-case tracking-normal text-zinc-500">
-              {syncStatusLabel}
-            </p>
+      <div className="mb-7">
+        <div className={`${activeView === "leaderboard" ? "mb-5" : ""} flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between`}>
+          <div>
+            <h2 className="text-3xl font-semibold text-zinc-950 sm:text-4xl">
+              {activeView === "leaderboard" ? "Company leaderboard" : "Latest in AI"}
+            </h2>
           </div>
-        </aside>
+        </div>
+        {activeView === "leaderboard" && (
+          <div className="rounded-2xl border border-zinc-200 bg-white p-3 shadow-sm">
+            <CategoryFilters
+              activeCategory={activeCategory}
+              activeCategories={selectedLeaderboardTopics}
+              counts={categoryCounts}
+              onCategoryChange={handleCategoryChange}
+              disabled={isLoading || showLeaderboardSkeleton}
+              loading={isLoading || showNewsSkeleton}
+              hideEmpty={false}
+              multiSelect
+            />
+          </div>
+        )}
+      </div>
 
-        <div className="min-w-0">
-          <div id="trending" className="mb-5 flex flex-col gap-4 border-b border-zinc-800 pb-4 sm:flex-row sm:items-end sm:justify-between">
+      <div className="min-w-0">
+          <div id="trending" className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div className="min-w-0 flex-1">
               {activeView === "leaderboard" ? (
-                <div className="grid grid-cols-[70px_minmax(0,1fr)] px-4 font-mono text-[11px] uppercase tracking-[0.14em] text-zinc-500 sm:grid-cols-[90px_minmax(0,1fr)_minmax(180px,360px)]">
+                <div className="grid grid-cols-[70px_minmax(0,1fr)] px-4 text-xs font-semibold uppercase tracking-[0.12em] text-zinc-400 sm:grid-cols-[90px_minmax(0,1fr)_minmax(180px,360px)]">
                   <span>Rank</span>
                   <span>Company</span>
                   <span className="hidden sm:block">Products</span>
                 </div>
               ) : searchedQuery === "All news" || searchedQuery === "ALL" || searchedQuery === "Trending news" ? (
-                <div className="flex items-center gap-5 font-mono text-xs font-normal uppercase tracking-[0.11em]">
+                <div className="flex items-center gap-5 text-sm font-semibold">
                   {(["latest", "trending"] as NewsRankMode[]).map((rankMode) => (
                     <button
                       key={rankMode}
@@ -756,28 +624,28 @@ export default function NewsExplorer({
                       onClick={() => void handleRankModeChange(rankMode)}
                       className={`pb-1 transition-colors disabled:cursor-wait ${
                         newsRankMode === rankMode
-                          ? "border-b border-zinc-300 text-zinc-200"
-                          : "text-zinc-600 hover:text-zinc-300"
+                          ? "border-b-2 border-zinc-950 text-zinc-950"
+                          : "text-zinc-500 hover:text-zinc-950"
                       }`}
                     >
-                      {rankMode === "latest" ? "LATEST" : "TRENDING NEWS"}
+                      {rankMode === "latest" ? "Latest" : "Trending"}
                     </button>
                   ))}
                 </div>
               ) : (
-                <h2 className="font-mono text-[11px] font-normal uppercase tracking-[0.12em] text-zinc-300">
+                <h2 className="text-sm font-semibold text-zinc-600">
                   Results for “{searchedQuery}”
                 </h2>
               )}
             </div>
             {activeView === "news" && (
-              <div className="flex flex-wrap items-center gap-4 font-mono text-xs font-normal uppercase tracking-[0.11em] text-zinc-600">
-                <span className="border-b border-[#3b82f6] pb-1 text-zinc-300">
+              <div className="flex flex-wrap items-center gap-4 text-sm font-semibold text-zinc-500">
+                <span className="text-zinc-600">
                   {newsRankMode === "trending"
                     ? trendingTopic ?? "Trending"
                     : "Last 30 days"}
                 </span>
-                <div className="flex border border-zinc-800 bg-[#0b0b0b]">
+                <div className="flex overflow-hidden rounded-full border border-zinc-200 bg-white shadow-sm">
                   {(["grid", "list"] as NewsLayout[]).map((layout) => (
                     <button
                       key={layout}
@@ -787,8 +655,8 @@ export default function NewsExplorer({
                       onClick={() => setNewsLayout(layout)}
                       className={`grid h-8 w-9 place-items-center transition-colors ${
                         newsLayout === layout
-                          ? "bg-[#101010] text-zinc-200"
-                          : "text-zinc-500 hover:text-zinc-100"
+                          ? "bg-zinc-950 text-white"
+                          : "text-zinc-500 hover:text-zinc-950"
                       }`}
                     >
                       {layout === "grid" ? (
@@ -818,7 +686,7 @@ export default function NewsExplorer({
             <div
               role="status"
               aria-label={`Loading news for ${searchedQuery}`}
-              className="grid md:grid-cols-2 xl:grid-cols-3"
+              className="grid justify-center gap-x-5 gap-y-6 md:grid-cols-[repeat(2,minmax(0,425px))] xl:grid-cols-[repeat(3,minmax(0,425px))]"
             >
               <span className="sr-only">Loading AI news</span>
               {skeletonCards.map((card) => (
@@ -831,8 +699,8 @@ export default function NewsExplorer({
                 key={newsLayout}
                 className={
                   newsLayout === "grid"
-                    ? "news-layout-enter grid md:grid-cols-2 xl:grid-cols-3"
-                    : "news-layout-enter grid gap-3"
+                    ? "news-layout-enter grid justify-center gap-x-5 gap-y-6 md:grid-cols-[repeat(2,minmax(0,425px))] xl:grid-cols-[repeat(3,minmax(0,425px))]"
+                    : "news-layout-enter grid gap-5"
                 }
               >
                 {items.map((item, index) => (
@@ -856,26 +724,25 @@ export default function NewsExplorer({
                     onClick={loadNextPage}
                     className={`border px-5 py-3 font-mono text-[11px] uppercase tracking-[0.14em] transition-colors disabled:cursor-wait ${
                       isLoadingMore
-                        ? "border-[#3b82f6] bg-[#2563eb] text-white"
-                        : "border-zinc-800 bg-[#0b0b0b] text-zinc-400 hover:border-zinc-600 hover:text-white"
+                        ? "border-zinc-950 bg-zinc-950 text-white"
+                        : "rounded-full border-zinc-200 bg-white text-zinc-600 shadow-sm hover:border-zinc-300 hover:text-zinc-950"
                     }`}
                   >
                     {isLoadingMore ? "Loading..." : "Load next 12"}
                   </button>
                 ) : (
-                  <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-zinc-700">
+                  <span className="text-sm font-semibold text-zinc-400">
                     End of index
                   </span>
                 )}
               </div>
             </>
           ) : (
-            <div className="border border-dashed border-zinc-800 px-6 py-20 text-center">
-              <h3 className="text-2xl text-white">No news found</h3>
+            <div className="rounded-2xl border border-dashed border-zinc-300 bg-white px-6 py-20 text-center">
+              <h3 className="text-2xl font-semibold text-zinc-950">No news found</h3>
               <p className="mt-3 text-sm text-zinc-500">Try a broader topic such as agents, LLMs, or infrastructure.</p>
             </div>
           )}
-        </div>
       </div>
     </section>
   );

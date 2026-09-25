@@ -23,17 +23,17 @@ const features = [
 
 export default function AboutPage() {
   return (
-    <main className="site-background min-h-screen text-zinc-100">
+    <main className="min-h-screen bg-white text-zinc-950">
       <Navbar />
 
       <section className="news-layout-enter mx-auto flex min-h-[calc(100vh-3.5rem)] max-w-4xl flex-col items-center justify-center px-5 py-16 text-center sm:px-8 sm:py-20">
-        <p className="font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-zinc-500">
+        <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-zinc-500">
           About AtlasCore
         </p>
-        <h1 className="mt-5 max-w-3xl text-5xl font-medium leading-none tracking-[-0.05em] text-white sm:text-6xl">
+        <h1 className="mt-5 max-w-3xl text-5xl font-semibold leading-none text-zinc-950 sm:text-6xl">
           An AI news index built for scanning the signal.
         </h1>
-        <p className="mt-7 max-w-2xl text-base leading-7 text-zinc-400">
+        <p className="mt-7 max-w-2xl text-base leading-7 text-zinc-500">
           AtlasCore helps you follow the fast-moving AI ecosystem without
           digging through scattered feeds. It organizes recent AI news by topic,
           company, and product so you can see what is changing, who is shipping,
@@ -43,23 +43,23 @@ export default function AboutPage() {
         <div className="mt-10 flex flex-wrap justify-center gap-3">
           <Link
             href="/"
-            className="inline-flex h-10 items-center border border-zinc-700 px-4 font-mono text-[11px] font-bold uppercase tracking-[0.14em] text-zinc-300 hover:border-zinc-500 hover:text-white"
+            className="inline-flex h-10 items-center rounded-full bg-zinc-950 px-4 text-[11px] font-bold uppercase tracking-[0.14em] text-white hover:bg-zinc-800"
           >
             Explore news
           </Link>
           <Link
             href="/?view=leaderboard"
-            className="inline-flex h-10 items-center border border-zinc-700 bg-white/[0.03] px-4 font-mono text-[11px] font-bold uppercase tracking-[0.14em] text-zinc-300 hover:border-zinc-500 hover:text-white"
+            className="inline-flex h-10 items-center rounded-full border border-zinc-200 bg-white px-4 text-[11px] font-bold uppercase tracking-[0.14em] text-zinc-700 hover:border-zinc-400 hover:text-zinc-950"
           >
             View leaderboard
           </Link>
         </div>
 
-        <div className="mt-12 w-full border border-zinc-800 bg-[#050505] p-6">
-          <p className="font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500">
+        <div className="mt-12 w-full rounded-2xl border border-zinc-200 bg-zinc-50 p-6">
+          <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500">
             Current focus
           </p>
-          <div className="mt-5 grid gap-3 font-mono text-[11px] uppercase leading-6 tracking-[0.12em] text-zinc-500 sm:grid-cols-2">
+          <div className="mt-5 grid gap-3 text-[11px] font-bold uppercase leading-6 tracking-[0.12em] text-zinc-500 sm:grid-cols-2">
             <p>Window: Last 30 days</p>
             <p>Sources: AI feeds</p>
             <p>Views: News / Leaderboard / Company pages</p>
@@ -67,13 +67,13 @@ export default function AboutPage() {
           </div>
         </div>
 
-        <div className="mt-12 grid w-full border-t border-zinc-900 pt-8 md:grid-cols-2">
+        <div className="mt-12 grid w-full border-t border-zinc-200 pt-8 md:grid-cols-2">
           {features.map((feature) => (
             <article
               key={feature.label}
               className="faded-divider px-0 py-6 md:px-5"
             >
-              <p className="font-mono text-[11px] font-bold uppercase tracking-[0.14em] text-zinc-300">
+              <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-zinc-400">
                 {feature.label}
               </p>
               <p className="mt-4 text-sm leading-6 text-zinc-500">

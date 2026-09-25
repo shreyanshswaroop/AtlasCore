@@ -1,0 +1,15 @@
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+
+name: atlascore
+
+nodes:
+  - role: control-plane
+    extraPortMappings:
+      - containerPort: 30080
+        hostPort: 3001
+        protocol: TCP
+
+      - containerPort: 30081
+        hostPort: 8001
+        protocol: TCP

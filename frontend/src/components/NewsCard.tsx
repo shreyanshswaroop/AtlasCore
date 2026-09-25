@@ -20,8 +20,6 @@ interface NewsCardProps {
   onBookmarkChange?: (newsId: string, isBookmarked: boolean) => void;
 }
 
-const labels: Record<string, string> = {};
-
 function BookmarkIcon() {
   return (
     <svg
@@ -65,9 +63,7 @@ export default function NewsCard({
   }).format(new Date(item.published_at));
 
   const primaryCategory = item.primary_topic ?? item.categories[0];
-
-  const category =
-    labels[primaryCategory] ?? primaryCategory ?? "Research";
+  const category = primaryCategory?.replaceAll("_", " ") ?? "AI";
 
   const accentColors = [
     "#3b82f6",
@@ -238,16 +234,16 @@ export default function NewsCard({
           onClick={handleBookmarkClick}
           className={`relative grid h-8 w-8 shrink-0 place-items-center font-mono text-base leading-none transition-transform duration-200 ease-out hover:scale-150 active:scale-95 disabled:cursor-wait ${
             requiresSignIn
-              ? "cursor-not-allowed text-zinc-700 hover:text-zinc-500"
+              ? "cursor-not-allowed text-zinc-300 hover:text-zinc-400"
               : isBookmarked
-              ? "cursor-pointer text-[#93c5fd]"
+              ? "cursor-pointer text-zinc-950"
               : "cursor-pointer text-zinc-400"
           }`}
         >
           {justSaved && (
             <span
               aria-hidden="true"
-              className="absolute h-8 w-8 rounded-full border border-sky-300/50 bg-sky-300/15 blur-[1px] animate-ping"
+              className="absolute h-8 w-8 rounded-full border border-zinc-300/50 bg-zinc-300/15 blur-[1px] animate-ping"
             />
           )}
           <span className="relative z-10">
@@ -256,19 +252,19 @@ export default function NewsCard({
         </button>
 
         {isSignInPromptOpen && (
-          <div className="absolute bottom-10 right-0 z-[80] w-64 border border-zinc-700 bg-[#050505] p-3 shadow-2xl shadow-black/70">
-            <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-zinc-500">
+          <div className="absolute bottom-10 right-0 z-[80] w-64 rounded-xl border border-zinc-200 bg-white p-3 shadow-2xl shadow-zinc-950/10">
+            <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-zinc-500">
               Sign in required
             </p>
-            <p className="mt-2 text-xs leading-5 text-zinc-400">
+            <p className="mt-2 text-xs leading-5 text-zinc-500">
               Sign in to save stories to your bookmark lists.
             </p>
           </div>
         )}
 
         {isSavePanelOpen && (
-          <div className="absolute bottom-10 right-0 z-[80] w-72 border border-zinc-700 bg-[#050505] p-3 shadow-2xl shadow-black/70">
-            <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-zinc-500">
+          <div className="absolute bottom-10 right-0 z-[80] w-72 rounded-xl border border-zinc-200 bg-white p-3 shadow-2xl shadow-zinc-950/10">
+            <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-zinc-500">
               Save to list
             </p>
 
@@ -277,14 +273,14 @@ export default function NewsCard({
                 type="button"
                 disabled={isBookmarking}
                 onClick={() => void saveBookmark()}
-                className="flex h-9 w-full items-center justify-between border border-zinc-800 px-3 text-left font-mono text-[11px] uppercase tracking-[0.1em] text-zinc-300 hover:border-sky-400/60 hover:bg-sky-400/10 disabled:cursor-wait"
+                className="flex h-9 w-full items-center justify-between rounded-lg border border-zinc-200 px-3 text-left text-[11px] font-bold uppercase tracking-[0.1em] text-zinc-700 hover:border-zinc-300 hover:bg-zinc-50 disabled:cursor-wait"
               >
                 Saved news
-                <span className="text-sky-300">+</span>
+                <span className="text-zinc-950">+</span>
               </button>
 
               {isLoadingLists ? (
-                <p className="px-1 py-2 font-mono text-[10px] uppercase tracking-[0.1em] text-zinc-600">
+                <p className="px-1 py-2 text-[10px] font-semibold uppercase tracking-[0.1em] text-zinc-400">
                   Loading lists...
                 </p>
               ) : (
@@ -298,7 +294,7 @@ export default function NewsCard({
                         listId: bookmarkList.id,
                       })
                     }
-                    className="flex h-9 w-full items-center justify-between px-3 text-left font-mono text-[11px] uppercase tracking-[0.1em] text-zinc-500 hover:bg-zinc-900 hover:text-white disabled:cursor-wait"
+                    className="flex h-9 w-full items-center justify-between rounded-lg px-3 text-left text-[11px] font-semibold uppercase tracking-[0.1em] text-zinc-500 hover:bg-zinc-50 hover:text-zinc-950 disabled:cursor-wait"
                   >
                     <span className="truncate">{bookmarkList.name}</span>
                     <span className="text-zinc-700">
@@ -319,10 +315,10 @@ export default function NewsCard({
                 setIsSavePanelOpen(false);
                 setIsCreateListModalOpen(true);
               }}
-              className="mt-3 flex h-10 w-full items-center justify-between border border-zinc-800 px-3 text-left font-mono text-[11px] font-bold uppercase tracking-[0.12em] text-zinc-400 hover:border-sky-400/60 hover:bg-sky-400/10 hover:text-sky-200 disabled:cursor-wait"
+              className="mt-3 flex h-10 w-full items-center justify-between rounded-lg border border-zinc-200 px-3 text-left text-[11px] font-bold uppercase tracking-[0.12em] text-zinc-600 hover:border-zinc-300 hover:bg-zinc-50 hover:text-zinc-800 disabled:cursor-wait"
             >
               Create new list
-              <span className="text-sky-300">+</span>
+              <span className="text-zinc-950">+</span>
             </button>
           </div>
         )}
@@ -337,29 +333,29 @@ export default function NewsCard({
             aria-modal="true"
             role="dialog"
             aria-labelledby={`create-bookmark-list-${item.id}`}
-            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/72 px-4 py-6 backdrop-blur-[3px]"
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-zinc-950/50 px-4 py-6 backdrop-blur-[3px]"
             onMouseDown={(event) => {
               if (event.target === event.currentTarget) {
                 setIsCreateListModalOpen(false);
               }
             }}
           >
-            <div className="relative w-full max-w-[440px] rounded-2xl border border-zinc-800 bg-[#070707] px-8 py-8 text-zinc-100 shadow-2xl shadow-black/60 sm:px-10">
+            <div className="relative w-full max-w-[440px] rounded-2xl border border-zinc-200 bg-white px-8 py-8 text-zinc-950 shadow-2xl shadow-zinc-950/20 sm:px-10">
               <button
                 type="button"
                 aria-label="Close create list dialog"
                 onClick={() => setIsCreateListModalOpen(false)}
-                className="absolute right-4 top-4 grid h-8 w-8 place-items-center rounded-full font-mono text-2xl leading-none text-zinc-500 hover:bg-zinc-900 hover:text-white"
+                className="absolute right-4 top-4 grid h-8 w-8 place-items-center rounded-full text-2xl leading-none text-zinc-500 hover:bg-zinc-100 hover:text-zinc-950"
               >
                 ×
               </button>
 
-              <p className="mb-4 font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-zinc-600">
+              <p className="mb-4 text-[11px] font-bold uppercase tracking-[0.18em] text-zinc-500">
                 Bookmark list
               </p>
               <h2
                 id={`create-bookmark-list-${item.id}`}
-                className="pr-8 text-2xl font-medium tracking-[-0.035em] text-white sm:text-3xl"
+                className="pr-8 text-2xl font-semibold text-zinc-950 sm:text-3xl"
               >
                 Create new list
               </h2>
@@ -391,17 +387,17 @@ export default function NewsCard({
                   value={newListName}
                   onChange={(event) => setNewListName(event.target.value)}
                   placeholder="LIST NAME"
-                  className="h-14 w-full rounded-md border border-zinc-800 bg-[#0b0b0b] px-4 font-mono text-[12px] uppercase tracking-[0.12em] text-zinc-100 outline-none placeholder:text-zinc-700 focus:border-zinc-500"
+                  className="h-14 w-full rounded-xl border border-zinc-200 bg-zinc-50 px-4 text-[12px] font-semibold uppercase tracking-[0.12em] text-zinc-950 outline-none placeholder:text-zinc-400 focus:border-zinc-500 focus:bg-white"
                 />
 
                 {bookmarkError && (
-                  <p className="border border-red-900/80 bg-red-950/50 px-3 py-2 text-center font-mono text-[11px] font-bold uppercase tracking-[0.1em] text-red-100">
+                  <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-center text-[11px] font-bold uppercase tracking-[0.1em] text-red-700">
                     {bookmarkError}
                   </p>
                 )}
 
                 {isCreateListSuccess && (
-                  <p className="border border-sky-400/40 bg-sky-400/10 px-3 py-2 text-center font-mono text-[11px] font-bold uppercase tracking-[0.1em] text-sky-100 animate-[auth-success-pop_420ms_ease-out_both]">
+                  <p className="rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 text-center text-[11px] font-bold uppercase tracking-[0.1em] text-zinc-800 animate-[auth-success-pop_420ms_ease-out_both]">
                     List created and story saved
                   </p>
                 )}
@@ -409,7 +405,7 @@ export default function NewsCard({
                 <button
                   type="submit"
                   disabled={isBookmarking || isCreateListSuccess}
-                  className="group flex h-12 w-full items-center justify-center overflow-hidden rounded-md bg-zinc-100 px-5 font-mono text-[12px] font-bold uppercase tracking-[0.14em] text-black hover:bg-white focus-visible:bg-white disabled:cursor-not-allowed disabled:bg-zinc-700 disabled:text-zinc-400"
+                  className="group flex h-12 w-full items-center justify-center overflow-hidden rounded-xl bg-zinc-950 px-5 text-[12px] font-bold uppercase tracking-[0.14em] text-white hover:bg-zinc-950 focus-visible:bg-zinc-950 disabled:cursor-not-allowed disabled:bg-zinc-200 disabled:text-zinc-400"
                 >
                   {isCreateListSuccess ? (
                     <>
@@ -453,34 +449,34 @@ export default function NewsCard({
   return (
     <>
     <article
-      className={`group border border-zinc-800 bg-[#0a0a0a] transition hover:relative hover:z-10 hover:border-zinc-600 ${
+      className={`group w-full overflow-hidden rounded-xl border border-zinc-200 bg-white transition-shadow duration-300 hover:border-zinc-300 hover:shadow-xl hover:shadow-zinc-950/10 ${
         isList
           ? "grid md:grid-cols-[280px_minmax(0,1fr)]"
-          : "flex min-h-[510px] flex-col"
+          : "flex h-[342px] max-w-[425px] flex-col justify-self-center"
       }`}
     >
       <Link
         href={detailUrl}
         aria-label={`Open ${item.title}`}
-        className={`news-preview block h-44 overflow-hidden border border-zinc-700 bg-[#e9e8e3] p-4 text-zinc-950 transition group-hover:border-zinc-500 ${
-          isList ? "m-4 md:h-[calc(100%-2rem)]" : "m-4 mb-0"
+        className={`news-preview relative block h-[168px] shrink-0 overflow-hidden bg-[#eef1f6] text-zinc-950 ${
+          isList ? "md:h-full" : ""
         }`}
       >
         {item.image_url ? (
           <img
             src={item.image_url}
             alt=""
-            className="h-full w-full object-cover"
+            className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.04]"
             loading="lazy"
           />
         ) : (
-          <div className="h-full p-4">
-            <div className="mb-4 flex items-center justify-between border-b border-zinc-400 pb-2 font-mono text-[7px] uppercase tracking-wider">
+          <div className="h-full p-4 transition-transform duration-500 ease-out group-hover:scale-[1.03]">
+            <div className="mb-3 flex items-center justify-between border-b border-zinc-300 pb-2 text-[7px] font-bold uppercase tracking-wider">
               <span>
                 AtlasCore / {String(index + 1).padStart(2, "0")}
               </span>
 
-              <span>{primaryCategory ?? "News"}</span>
+              <span>{sourceName}</span>
             </div>
 
             <p className="line-clamp-2 max-w-[90%] font-serif text-base font-bold leading-tight">
@@ -488,7 +484,7 @@ export default function NewsCard({
             </p>
 
             <div
-              className="mt-5 flex h-12 items-end gap-1"
+              className="mt-6 flex h-10 items-end gap-1"
               aria-hidden="true"
             >
               {[38, 64, 48, 82, 56, 70, 44, 76, 52, 68, 34, 58].map(
@@ -507,25 +503,21 @@ export default function NewsCard({
             </div>
           </div>
         )}
+        <span className="absolute left-4 top-4 max-w-[calc(100%-2rem)] truncate rounded-full bg-zinc-950/95 px-2.5 py-1 text-[11px] font-bold leading-none text-white shadow-sm">
+          {category}
+        </span>
       </Link>
 
-      <div className="flex flex-1 flex-col p-5">
-        <div className="mb-4 flex min-h-4 items-start">
-          <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-zinc-500">
-            <span style={{ color: accent }}>■</span>
-            <span className="ml-2">{category}</span>
-          </p>
-        </div>
-
+      <div className="flex min-h-0 flex-1 flex-col px-5 py-4">
         {bookmarkError && (
-          <p className="-mt-2 mb-3 font-mono text-[10px] uppercase tracking-[0.1em] text-red-300">
+          <p className="-mt-2 mb-3 text-[10px] font-bold uppercase tracking-[0.1em] text-red-600">
             {bookmarkError}
           </p>
         )}
 
         <h3
-          className={`relative pr-8 font-medium leading-snug tracking-[-0.02em] text-zinc-100 decoration-[#3b82f6] underline-offset-4 ${
-            isList ? "line-clamp-2 text-xl" : "line-clamp-3 text-lg"
+          className={`relative pr-8 font-semibold leading-snug text-zinc-950 decoration-zinc-950 underline-offset-4 ${
+            isList ? "line-clamp-2 text-lg" : "line-clamp-2 text-lg"
           }`}
         >
           <Link href={detailUrl} className="hover:underline focus-visible:underline">
@@ -534,22 +526,22 @@ export default function NewsCard({
 
           <span
             aria-hidden="true"
-            className="absolute bottom-0 right-0 translate-y-0.5 font-mono text-2xl leading-none text-zinc-100 opacity-0 transition group-hover:translate-x-0.5 group-hover:opacity-100 group-focus-within:opacity-100"
+            className="absolute bottom-0 right-0 translate-y-0.5 text-2xl leading-none text-zinc-950 opacity-0 transition group-hover:translate-x-0.5 group-hover:opacity-100 group-focus-within:opacity-100"
           >
             ↗
           </span>
         </h3>
 
         <p
-          className={`mt-3 text-xs leading-5 text-zinc-500 ${
-            isList ? "line-clamp-2" : "line-clamp-3"
+          className={`mt-2 text-sm leading-5 text-zinc-500 ${
+            isList ? "line-clamp-2" : "line-clamp-2"
           }`}
         >
           {item.summary}
         </p>
 
-        <div className="mt-auto pt-6">
-          <div className="flex items-center justify-between border-t border-zinc-800 pt-4 font-mono text-[10px] uppercase tracking-[0.1em] text-zinc-500">
+        <div className="mt-auto pt-3">
+          <div className="flex items-center justify-between text-xs font-semibold text-zinc-500">
             <span>{publishedDate}</span>
 
             <div className="flex items-center gap-3">
@@ -559,7 +551,7 @@ export default function NewsCard({
                 href={sourceUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="border border-zinc-700 px-2 py-1 hover:border-[#3b82f6] hover:text-white"
+                className="rounded-full border border-zinc-200 px-3 py-1.5 text-zinc-500 hover:border-zinc-300 hover:bg-zinc-50 hover:text-zinc-800"
               >
                 {sourceName} ↗
               </a>

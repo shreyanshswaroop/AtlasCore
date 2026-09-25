@@ -232,22 +232,6 @@ function CategoryIcon({ icon }: { icon: IconName }) {
   }
 }
 
-function ChevronIcon() {
-  return (
-    <svg
-      className="h-3.5 w-3.5"
-      fill="none"
-      stroke="currentColor"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth="2"
-      viewBox="0 0 24 24"
-    >
-      <path d="m9 18 6-6-6-6" />
-    </svg>
-  );
-}
-
 const skeletonRows = [
   "all",
   "agents",
@@ -268,13 +252,13 @@ function CategoryFiltersSkeleton() {
     <div
       role="status"
       aria-label="Loading topics"
-      className="flex gap-2 overflow-x-auto pb-2 lg:block lg:max-h-[620px] lg:space-y-0.5 lg:overflow-y-hidden lg:overflow-x-hidden lg:pb-0 lg:pr-1"
+      className="flex gap-3 overflow-x-auto pb-2"
     >
       <span className="sr-only">Loading topics</span>
       {skeletonRows.map((row, index) => (
         <div
           key={row}
-          className="flex min-w-[150px] items-center justify-between gap-3 border border-transparent px-3 py-2.5 lg:w-full lg:min-w-0"
+          className="flex min-w-[150px] items-center justify-between gap-3 rounded-full border border-zinc-200 bg-white px-4 py-2.5"
         >
           <span className="flex min-w-0 items-center gap-2.5">
             <span className="skeleton-shimmer h-1.5 w-1.5" />
@@ -321,7 +305,7 @@ export default function CategoryFilters({
     : filteredCategories;
 
   return (
-    <div className="flex gap-2 overflow-x-auto pb-2 lg:block lg:max-h-[620px] lg:space-y-0.5 lg:overflow-y-auto lg:overflow-x-hidden lg:pb-0 lg:pr-1">
+    <div className="flex gap-3 overflow-x-auto pb-2">
       {visibleCategories.map((category) => {
         const isActive = multiSelect
           ? activeCategories?.includes(category.label) ||
@@ -336,22 +320,20 @@ export default function CategoryFilters({
             aria-pressed={isActive}
             disabled={disabled}
             onClick={() => onCategoryChange(category)}
-            className={`group flex min-w-max items-center justify-between gap-3 border px-3 py-2.5 text-left font-mono text-xs font-bold uppercase tracking-[0.11em] lg:w-full lg:min-w-0 ${
+            className={`group flex min-w-max items-center justify-between gap-3 rounded-full border px-4 py-2.5 text-left text-sm font-semibold ${
               isActive
-                ? "border-zinc-700 bg-zinc-900 text-white"
-                : "border-transparent text-zinc-400 hover:border-zinc-800 hover:text-zinc-100"
+                ? "border-zinc-950 bg-zinc-950 text-white shadow-sm shadow-zinc-950/20"
+                : "border-zinc-200 bg-white text-zinc-600 hover:border-zinc-300 hover:text-zinc-950"
             }`}
           >
             <span className="flex min-w-0 items-center gap-2.5">
-              <span className={`h-1.5 w-1.5 border ${isActive ? "border-[#3b82f6] bg-[#3b82f6]" : "border-zinc-700"}`} />
-              <span className={`grid h-5 w-5 shrink-0 place-items-center ${isActive ? "text-white" : "text-zinc-300 group-hover:text-white"}`}>
+              <span className={`grid h-5 w-5 shrink-0 place-items-center ${isActive ? "text-white" : "text-zinc-400 group-hover:text-zinc-950"}`}>
                 <CategoryIcon icon={category.icon} />
               </span>
-              <span className="truncate text-zinc-200 group-hover:text-white">{category.label}</span>
+              <span className="truncate">{category.label.replaceAll("_", " ")}</span>
             </span>
-            <span className="flex shrink-0 items-center gap-2 text-sm font-bold text-zinc-400 group-hover:text-zinc-100">
+            <span className={`flex shrink-0 items-center gap-2 text-sm font-bold ${isActive ? "text-white/90" : "text-zinc-400 group-hover:text-zinc-700"}`}>
               <span>{count ?? category.count}</span>
-              {category.label !== "ALL" && <ChevronIcon />}
             </span>
           </button>
         );

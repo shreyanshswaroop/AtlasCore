@@ -38,10 +38,12 @@ This repository demonstrates not only full-stack application development but als
 - Environment-based configuration
 - Production Docker images
 - Docker Compose orchestration
+- GitHub Actions CI
+- Docker image security scanning with Trivy
 
 Upcoming
 
-- GitHub Actions CI/CD
+- CD pipeline
 - Terraform Infrastructure
 - Kubernetes
 - Helm Charts
@@ -114,7 +116,8 @@ Future Production Architecture
 
 - Docker
 - Docker Compose
-- GitHub Actions (Upcoming)
+- GitHub Actions
+- Trivy
 - Terraform (Upcoming)
 - Kubernetes (Upcoming)
 - Helm (Upcoming)
@@ -261,8 +264,26 @@ Git Commit
 GitHub
         │
         ▼
-CI/CD Pipeline (Upcoming)
+GitHub Actions CI
+        │
+        ▼
+Docker Build and Trivy Scan
 ```
+
+---
+
+# CI and Security Scanning
+
+GitHub Actions runs on pushes and pull requests to `main`.
+
+The CI pipeline includes:
+
+- Backend tests with Python 3.12 and pytest
+- Frontend dependency install, linting, and production build with Node.js 22
+- Backend and frontend Docker image builds using Docker Buildx
+- Trivy scans for both Docker images
+
+Trivy is configured to scan for `HIGH` and `CRITICAL` vulnerabilities, ignore unfixed findings, and fail the workflow when fixed high-severity issues are present.
 
 ---
 
@@ -276,11 +297,13 @@ CI/CD Pipeline (Upcoming)
 - Docker Compose
 - Health Checks
 - Production Images
+- GitHub Actions CI
+- Backend and frontend Docker image builds in CI
+- Trivy image vulnerability scanning
 
 ## In Progress
 
-- GitHub Actions
-- CI Pipeline
+- CI/CD hardening
 
 ## Planned
 

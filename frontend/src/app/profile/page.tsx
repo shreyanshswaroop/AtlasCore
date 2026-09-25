@@ -77,39 +77,28 @@ function ProfileSkeleton() {
     <div
       role="status"
       aria-label="Loading profile settings"
-      className="grid gap-8 lg:grid-cols-[270px_minmax(0,1fr)]"
+      className="mx-auto max-w-[1120px] space-y-6"
     >
       <span className="sr-only">Loading profile settings</span>
 
-      <aside className="lg:sticky lg:top-20 lg:max-h-[calc(100vh-6rem)] lg:self-start lg:overflow-y-hidden">
-        <div className="mb-4 skeleton-shimmer h-3 w-20" />
-        <div className="flex gap-2 overflow-x-auto pb-2 lg:block lg:space-y-0.5 lg:overflow-x-hidden lg:pb-0 lg:pr-1">
-          {sidebarItems.map((item, index) => (
-            <div
-              key={item}
-              className={`flex min-w-[150px] items-center gap-3 border px-3 py-2.5 lg:w-full lg:min-w-0 ${
-                index === 0 ? "border-zinc-800 bg-zinc-900" : "border-transparent"
-              }`}
-            >
-              <span className="skeleton-shimmer h-1.5 w-1.5" />
-              <span
-                className="skeleton-shimmer h-3"
-                style={{ width: `${Math.max(48, 120 - index * 8)}px` }}
-              />
-            </div>
-          ))}
-        </div>
-      </aside>
+      <div className="flex gap-2 overflow-x-auto rounded-2xl border border-zinc-200 bg-white p-2 shadow-sm">
+        {sidebarItems.map((item, index) => (
+          <div
+            key={item}
+            className="flex min-w-[120px] items-center justify-center rounded-xl px-4 py-3"
+          >
+            <span
+              className="skeleton-shimmer h-3"
+              style={{ width: `${Math.max(48, 112 - index * 8)}px` }}
+            />
+          </div>
+        ))}
+      </div>
 
-      <div className="min-w-0 w-full max-w-[750px] space-y-5">
-        <div className="mb-5 flex flex-col gap-4 border-b border-zinc-800 pb-4 sm:flex-row sm:items-end sm:justify-between">
-          <div className="skeleton-shimmer h-3 w-36" />
-          <div className="skeleton-shimmer h-3 w-44" />
-        </div>
-
-        <section className="border border-zinc-800 bg-[#080808] p-6">
+      <div className="min-w-0 space-y-5">
+        <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
           <div className="mb-7 flex items-center gap-5">
-            <div className="skeleton-shimmer h-20 w-20" />
+            <div className="skeleton-shimmer h-20 w-20 rounded-full" />
             <div className="space-y-3">
               <div className="skeleton-shimmer h-3 w-20" />
               <div className="skeleton-shimmer h-3 w-64 max-w-[60vw]" />
@@ -127,12 +116,12 @@ function ProfileSkeleton() {
           </div>
         </section>
 
-        <section className="border border-zinc-800 bg-[#080808] p-6">
+        <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
           <div className="skeleton-shimmer h-3 w-24" />
           <div className="mt-2 skeleton-shimmer h-11 w-full" />
         </section>
 
-        <section className="border border-zinc-800 bg-[#080808] p-6">
+        <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
           <div className="skeleton-shimmer h-3 w-36" />
           <div className="mt-4 flex flex-wrap gap-2">
             {["one", "two", "three", "four", "five", "six", "seven"].map(
@@ -249,90 +238,73 @@ export default function ProfilePage() {
   }
 
   return (
-    <main className="site-background min-h-screen text-zinc-100">
+    <main className="site-background min-h-screen text-zinc-950">
       <Navbar />
 
-      <section>
-        <div className="mx-auto max-w-[1500px] px-5 pb-8 pt-14 sm:px-8 sm:pb-10 sm:pt-16">
+      <section className="border-b border-zinc-200 bg-white">
+        <div className="mx-auto max-w-[1120px] px-5 py-10 sm:px-8 sm:py-14">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
             <div>
-              <p className="font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-zinc-600">
+              <p className="text-sm font-semibold uppercase tracking-[0.12em] text-zinc-950">
                 Account
               </p>
-              <h1 className="mt-4 text-4xl font-medium tracking-[-0.04em] text-white">
+              <h1 className="mt-3 text-4xl font-semibold leading-tight text-zinc-950 sm:text-5xl">
                 Settings
               </h1>
+              <p className="mt-4 max-w-2xl text-base leading-7 text-zinc-500">
+                Manage your profile, followed topics, saved lists, and account preferences.
+              </p>
             </div>
           </div>
         </div>
       </section>
 
-      <section className="mx-auto max-w-[1500px] px-5 pb-10 pt-6 sm:px-8 sm:pb-14 sm:pt-8">
+      <section className="mx-auto max-w-[1120px] px-5 pb-10 pt-8 sm:px-8 sm:pb-16 sm:pt-10">
         {isLoading ? (
           <ProfileSkeleton />
         ) : !user ? (
-          <div className="border border-zinc-800 bg-[#080808] px-6 py-16 text-center">
-            <p className="font-mono text-xs uppercase tracking-[0.14em] text-zinc-500">
+          <div className="rounded-3xl border border-zinc-200 bg-white px-6 py-16 text-center shadow-sm">
+            <p className="text-xs font-bold uppercase tracking-[0.14em] text-zinc-500">
               Sign in required
             </p>
             <Link
               href="/"
-              className="mt-6 inline-flex border border-zinc-700 px-4 py-3 font-mono text-[11px] font-bold uppercase tracking-[0.14em] text-zinc-300 hover:border-zinc-500 hover:text-white"
+              className="mt-6 inline-flex rounded-full border border-zinc-200 bg-white px-5 py-3 text-sm font-semibold text-zinc-600 shadow-sm hover:border-zinc-300 hover:text-zinc-950"
             >
               Back to home
             </Link>
           </div>
         ) : (
-          <div className="grid gap-8 lg:grid-cols-[270px_minmax(0,1fr)]">
-            <aside className="lg:sticky lg:top-20 lg:max-h-[calc(100vh-6rem)] lg:self-start lg:overflow-y-auto">
-              <p className="mb-4 font-mono text-xs font-normal uppercase tracking-[0.11em] text-zinc-600">
-                Settings
-              </p>
-              <div className="flex gap-2 overflow-x-auto pb-2 lg:block lg:space-y-0.5 lg:overflow-x-hidden lg:pb-0 lg:pr-1">
+          <div className="space-y-6">
+            <nav className="overflow-x-auto rounded-2xl border border-zinc-200 bg-white p-2 shadow-sm">
+              <div className="flex min-w-max gap-1">
               {sidebarItems.map((item, index) => (
                 <a
                   key={item}
                   href={`#profile-${item.toLowerCase()}`}
-                  className={`group flex min-w-max items-center justify-between gap-3 border px-3 py-2.5 text-left font-mono text-xs font-bold uppercase tracking-[0.11em] lg:w-full lg:min-w-0 ${
+                  className={`rounded-xl px-4 py-2.5 text-sm font-semibold ${
                     index === 0
-                      ? "border-zinc-800 bg-zinc-900 text-white"
-                      : "border-transparent text-zinc-600 hover:border-zinc-800 hover:text-zinc-300"
+                      ? "bg-zinc-950 text-white"
+                      : "text-zinc-500 hover:bg-zinc-50 hover:text-zinc-950"
                   }`}
                 >
-                  <span className="flex min-w-0 items-center gap-2.5">
-                    <span
-                      className={`h-1.5 w-1.5 border ${
-                        index === 0
-                          ? "border-[#3b82f6] bg-[#3b82f6]"
-                          : "border-zinc-700"
-                      }`}
-                    />
-                    <span className="truncate text-zinc-200 group-hover:text-white">
-                      {item}
-                    </span>
-                  </span>
+                  {item}
                 </a>
               ))}
               </div>
-            </aside>
+            </nav>
 
-            <form onSubmit={handleSubmit} className="min-w-0 w-full max-w-[750px] space-y-5">
-              <div className="mb-5 flex flex-col gap-4 border-b border-zinc-800 pb-4 sm:flex-row sm:items-end sm:justify-between">
-                <h2 className="font-mono text-[11px] font-normal uppercase tracking-[0.12em] text-zinc-300">
-                  Profile settings
-                </h2>
-              </div>
-
-              <section id="profile-general" className="border border-zinc-800 bg-[#080808] p-6">
+            <form onSubmit={handleSubmit} className="min-w-0 space-y-5">
+              <section id="profile-general" className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
                 <div className="mb-7 flex items-center gap-5">
-                  <div className="grid h-20 w-20 place-items-center border border-zinc-700 bg-zinc-900 font-mono text-2xl font-bold uppercase text-white">
+                  <div className="grid h-20 w-20 place-items-center rounded-full bg-gradient-to-br from-zinc-950 via-red-600 to-zinc-950 text-2xl font-bold uppercase text-white shadow-sm">
                     {user.full_name.slice(0, 2)}
                   </div>
                   <div>
-                    <p className="font-mono text-[11px] font-bold uppercase tracking-[0.14em] text-zinc-600">
+                    <p className="text-xs font-bold uppercase tracking-[0.14em] text-zinc-950">
                       Profile
                     </p>
-                    <p className="mt-2 text-sm text-zinc-400">
+                    <p className="mt-2 text-sm text-zinc-500">
                       Manage your AtlasCore account and feed signal.
                     </p>
                   </div>
@@ -340,38 +312,38 @@ export default function ProfilePage() {
 
                 <div className="grid gap-5 sm:grid-cols-2">
                   <label className="block">
-                    <span className="font-mono text-[11px] font-bold uppercase tracking-[0.12em] text-zinc-500">
+                    <span className="text-sm font-semibold text-zinc-600">
                       Name
                     </span>
                     <input
                       value={fullName}
                       onChange={(event) => setFullName(event.target.value)}
-                      className="mt-2 h-11 w-full border border-zinc-800 bg-[#0b0b0b] px-4 font-mono text-sm font-bold text-white outline-none hover:border-zinc-600 focus:border-zinc-500"
+                      className="mt-2 h-12 w-full rounded-xl border border-zinc-200 bg-zinc-50 px-4 text-sm font-semibold text-zinc-950 outline-none hover:border-zinc-300 focus:border-zinc-500 focus:bg-white"
                     />
                   </label>
 
                   <label className="block">
-                    <span className="font-mono text-[11px] font-bold uppercase tracking-[0.12em] text-zinc-500">
+                    <span className="text-sm font-semibold text-zinc-600">
                       Email address
                     </span>
                     <input
                       value={user.email}
                       readOnly
-                      className="mt-2 h-11 w-full border border-zinc-800 bg-[#050505] px-4 font-mono text-sm font-bold text-zinc-500 outline-none"
+                      className="mt-2 h-12 w-full rounded-xl border border-zinc-200 bg-zinc-100 px-4 text-sm font-semibold text-zinc-500 outline-none"
                     />
                   </label>
                 </div>
               </section>
 
-              <section id="profile-feed" className="border border-zinc-800 bg-[#080808] p-6">
+              <section id="profile-feed" className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
                 <label className="block">
-                  <span className="font-mono text-[11px] font-bold uppercase tracking-[0.12em] text-zinc-500">
+                  <span className="text-sm font-semibold text-zinc-600">
                     Occupation
                   </span>
                   <select
                     value={jobTitle}
                     onChange={(event) => setJobTitle(event.target.value)}
-                    className="mt-2 h-11 w-full border border-zinc-800 bg-[#0b0b0b] px-4 font-mono text-sm font-bold uppercase text-white outline-none hover:border-zinc-600 focus:border-zinc-500"
+                    className="mt-2 h-12 w-full rounded-xl border border-zinc-200 bg-zinc-50 px-4 text-sm font-semibold text-zinc-950 outline-none hover:border-zinc-300 focus:border-zinc-500 focus:bg-white"
                   >
                     {roleOptions.map((role) => (
                       <option key={role} value={role}>
@@ -382,10 +354,13 @@ export default function ProfilePage() {
                 </label>
               </section>
 
-              <section className="border border-zinc-800 bg-[#080808] p-6">
-                <h2 className="font-mono text-[11px] font-bold uppercase tracking-[0.12em] text-zinc-500">
+              <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
+                <h2 className="text-lg font-semibold text-zinc-950">
                   Topics you follow
                 </h2>
+                <p className="mt-2 text-sm leading-6 text-zinc-500">
+                  These topics appear in your footer categories and help tune future feed signals.
+                </p>
                 <div className="mt-4 flex flex-wrap gap-2">
                   {topicOptions.map((topic) => {
                     const isSelected = selectedTopics.includes(topic.label);
@@ -395,21 +370,21 @@ export default function ProfilePage() {
                         key={topic.label}
                         type="button"
                         onClick={() => toggleValue(topic.label, selectedTopics, setSelectedTopics)}
-                        className={`border px-3 py-2 font-mono text-[11px] font-bold uppercase tracking-[0.1em] transition ${
+                        className={`rounded-full border px-4 py-2 text-sm font-semibold transition ${
                           isSelected
-                            ? "border-[#3b82f6]/70 bg-blue-950/30 text-blue-300"
-                            : "border-zinc-800 bg-[#0b0b0b] text-zinc-500 hover:border-zinc-600 hover:text-zinc-200"
+                            ? "border-zinc-950 bg-zinc-950 text-white shadow-sm shadow-zinc-950/20"
+                            : "border-zinc-200 bg-white text-zinc-500 hover:border-zinc-300 hover:text-zinc-950"
                         }`}
                       >
-                        {topic.label}
+                        {formatOption(topic.label)}
                       </button>
                     );
                   })}
                 </div>
               </section>
 
-              <section className="border border-zinc-800 bg-[#080808] p-6">
-                <h2 className="font-mono text-[11px] font-bold uppercase tracking-[0.12em] text-zinc-500">
+              <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
+                <h2 className="text-lg font-semibold text-zinc-950">
                   Content types
                 </h2>
                 <div className="mt-4 flex flex-wrap gap-2">
@@ -421,10 +396,10 @@ export default function ProfilePage() {
                         key={contentType}
                         type="button"
                         onClick={() => toggleValue(contentType, selectedContentTypes, setSelectedContentTypes)}
-                        className={`border px-3 py-2 font-mono text-[11px] font-bold uppercase tracking-[0.1em] transition ${
+                        className={`rounded-full border px-4 py-2 text-sm font-semibold transition ${
                           isSelected
-                            ? "border-[#3b82f6]/70 bg-blue-950/30 text-blue-300"
-                            : "border-zinc-800 bg-[#0b0b0b] text-zinc-500 hover:border-zinc-600 hover:text-zinc-200"
+                            ? "border-zinc-950 bg-zinc-950 text-white shadow-sm shadow-zinc-950/20"
+                            : "border-zinc-200 bg-white text-zinc-500 hover:border-zinc-300 hover:text-zinc-950"
                         }`}
                       >
                         {contentType}
@@ -434,18 +409,18 @@ export default function ProfilePage() {
                 </div>
               </section>
 
-              <section className="border border-zinc-800 bg-[#080808] p-6">
-                <h2 className="font-mono text-[11px] font-bold uppercase tracking-[0.12em] text-zinc-500">
+              <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
+                <h2 className="text-lg font-semibold text-zinc-950">
                   Feed preview
                 </h2>
-                <p className="mt-3 text-sm leading-6 text-zinc-400">
+                <p className="mt-3 text-sm leading-6 text-zinc-500">
                   Your feed prioritizes {selectedTopics.slice(0, 4).map(formatOption).join(", ") || "your selected topics"}.
                   Content is tuned for {formatOption(jobTitle).toLowerCase()} signals.
                 </p>
-                <div className="mt-4 grid gap-2 sm:grid-cols-3">
+                <div className="mt-5 grid gap-3 sm:grid-cols-3">
                   {selectedTopics.slice(0, 3).map((topic) => (
-                    <div key={topic} className="border border-zinc-800 bg-[#050505] p-3">
-                      <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-[#93c5fd]">
+                    <div key={topic} className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
+                      <p className="text-sm font-semibold text-zinc-950">
                         {formatOption(topic)}
                       </p>
                       <p className="mt-2 text-xs leading-5 text-zinc-500">
@@ -456,10 +431,10 @@ export default function ProfilePage() {
                 </div>
               </section>
 
-              <section id="profile-lists" className="border border-zinc-800 bg-[#080808] p-6">
+              <section id="profile-lists" className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
                   <div>
-                    <h2 className="font-mono text-[11px] font-bold uppercase tracking-[0.12em] text-zinc-500">
+                    <h2 className="text-lg font-semibold text-zinc-950">
                       Bookmark lists
                     </h2>
                     <p className="mt-2 text-sm text-zinc-500">
@@ -468,24 +443,24 @@ export default function ProfilePage() {
                   </div>
                   <Link
                     href="/bookmarks"
-                    className="inline-flex border border-zinc-700 px-3 py-2 font-mono text-[11px] font-bold uppercase tracking-[0.12em] text-zinc-300 hover:border-zinc-500 hover:text-white"
+                    className="inline-flex rounded-full border border-zinc-200 bg-white px-4 py-2 text-sm font-semibold text-zinc-600 shadow-sm hover:border-zinc-300 hover:text-zinc-950"
                   >
                     Open bookmarks
                   </Link>
                 </div>
 
-                <div className="mt-5 space-y-2">
+                <div className="mt-5 space-y-3">
                   {bookmarkLists.length > 0 ? (
                     bookmarkLists.map((bookmarkList) => (
                       <div
                         key={bookmarkList.id}
-                        className="flex items-center justify-between gap-4 border border-zinc-800 bg-[#050505] px-4 py-3"
+                        className="flex items-center justify-between gap-4 rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3"
                       >
                         <div className="min-w-0">
-                          <p className="truncate font-mono text-[12px] font-bold uppercase tracking-[0.12em] text-zinc-200">
+                          <p className="truncate text-sm font-semibold text-zinc-950">
                             {bookmarkList.name}
                           </p>
-                          <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.1em] text-zinc-600">
+                          <p className="mt-1 text-xs font-semibold text-zinc-400">
                             {bookmarkList.item_count ?? 0} saved stories
                           </p>
                         </div>
@@ -493,14 +468,14 @@ export default function ProfilePage() {
                           <button
                             type="button"
                             disabled
-                            className="border border-zinc-800 px-3 py-2 font-mono text-[10px] uppercase tracking-[0.12em] text-zinc-700"
+                            className="rounded-full border border-zinc-200 px-3 py-2 text-xs font-semibold text-zinc-400"
                           >
                             Rename soon
                           </button>
                           <button
                             type="button"
                             disabled
-                            className="border border-zinc-800 px-3 py-2 font-mono text-[10px] uppercase tracking-[0.12em] text-zinc-700"
+                            className="rounded-full border border-zinc-200 px-3 py-2 text-xs font-semibold text-zinc-400"
                           >
                             Delete soon
                           </button>
@@ -508,27 +483,27 @@ export default function ProfilePage() {
                       </div>
                     ))
                   ) : (
-                    <p className="border border-dashed border-zinc-800 px-4 py-6 text-center text-sm text-zinc-500">
+                    <p className="rounded-2xl border border-dashed border-zinc-300 px-4 py-6 text-center text-sm text-zinc-500">
                       No custom lists yet. Create one from any bookmark menu.
                     </p>
                   )}
                 </div>
               </section>
 
-              <section id="profile-notifications" className="border border-zinc-800 bg-[#080808] p-6">
-                <h2 className="font-mono text-[11px] font-bold uppercase tracking-[0.12em] text-zinc-500">
+              <section id="profile-notifications" className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
+                <h2 className="text-lg font-semibold text-zinc-950">
                   Notifications
                 </h2>
-                <div className="mt-4 grid gap-2 sm:grid-cols-2">
+                <div className="mt-4 grid gap-3 sm:grid-cols-2">
                   {notificationOptions.map((option) => (
                     <label
                       key={option}
-                      className="flex items-center justify-between gap-4 border border-zinc-800 bg-[#050505] px-4 py-3 text-zinc-600"
+                      className="flex items-center justify-between gap-4 rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-zinc-500"
                     >
-                      <span className="font-mono text-[11px] font-bold uppercase tracking-[0.1em]">
+                      <span className="text-sm font-semibold">
                         {option}
                       </span>
-                      <span className="border border-zinc-800 px-2 py-1 font-mono text-[9px] uppercase tracking-[0.12em] text-zinc-700">
+                      <span className="rounded-full border border-zinc-200 bg-white px-2 py-1 text-xs font-semibold text-zinc-400">
                         Soon
                       </span>
                     </label>
@@ -536,12 +511,12 @@ export default function ProfilePage() {
                 </div>
               </section>
 
-              <section id="profile-companies" className="border border-zinc-800 bg-[#080808] p-6">
-                <h2 className="font-mono text-[11px] font-bold uppercase tracking-[0.12em] text-zinc-500">
+              <section id="profile-companies" className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
+                <h2 className="text-lg font-semibold text-zinc-950">
                   Companies you follow
                 </h2>
-                <div className="mt-4 border border-dashed border-zinc-800 px-4 py-8 text-center">
-                  <p className="font-mono text-[11px] uppercase tracking-[0.12em] text-zinc-600">
+                <div className="mt-4 rounded-2xl border border-dashed border-zinc-300 px-4 py-8 text-center">
+                  <p className="text-sm font-semibold text-zinc-500">
                     Followed companies coming soon
                   </p>
                   <p className="mt-2 text-sm text-zinc-500">
@@ -550,17 +525,17 @@ export default function ProfilePage() {
                 </div>
               </section>
 
-              <section id="profile-security" className="border border-zinc-800 bg-[#080808] p-6">
-                <h2 className="font-mono text-[11px] font-bold uppercase tracking-[0.12em] text-zinc-500">
+              <section id="profile-security" className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
+                <h2 className="text-lg font-semibold text-zinc-950">
                   Account security
                 </h2>
-                <div className="mt-4 space-y-2">
+                <div className="mt-4 space-y-3">
                   {securityActions.map((action) => (
                     <button
                       key={action}
                       type="button"
                       disabled
-                      className="flex w-full items-center justify-between border border-zinc-800 bg-[#050505] px-4 py-3 text-left font-mono text-[11px] font-bold uppercase tracking-[0.1em] text-zinc-700"
+                      className="flex w-full items-center justify-between rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-left text-sm font-semibold text-zinc-400"
                     >
                       {action}
                       <span>Coming soon</span>
@@ -570,12 +545,12 @@ export default function ProfilePage() {
               </section>
 
               {message && (
-                <p className="border border-emerald-900/80 bg-emerald-950/30 px-4 py-3 font-mono text-[11px] font-bold uppercase tracking-[0.12em] text-emerald-200">
+                <p className="rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm font-semibold text-zinc-800">
                   {message}
                 </p>
               )}
               {errorMessage && (
-                <p className="border border-red-900/80 bg-red-950/40 px-4 py-3 font-mono text-[11px] font-bold uppercase tracking-[0.12em] text-red-200">
+                <p className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
                   {errorMessage}
                 </p>
               )}
@@ -583,7 +558,7 @@ export default function ProfilePage() {
               <button
                 type="submit"
                 disabled={isSaving}
-                className="group flex h-12 w-full items-center justify-center bg-[#3b82f6] px-5 font-mono text-[12px] font-bold uppercase tracking-[0.14em] text-white hover:bg-[#60a5fa] disabled:cursor-wait disabled:bg-zinc-700 disabled:text-zinc-400"
+                className="group flex h-12 w-full items-center justify-center rounded-full bg-zinc-950 px-5 text-sm font-bold text-white shadow-sm hover:bg-zinc-950 disabled:cursor-wait disabled:bg-zinc-200 disabled:text-zinc-400"
               >
                 {isSaving ? "Saving..." : "Save changes"}
               </button>

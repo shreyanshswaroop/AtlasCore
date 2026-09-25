@@ -159,26 +159,26 @@ export default function AuthModal({
       aria-modal="true"
       role="dialog"
       aria-labelledby="auth-modal-title"
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/72 px-4 py-6 backdrop-blur-[3px]"
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-zinc-950/45 px-4 py-6 backdrop-blur-sm"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) {
           onClose();
         }
       }}
     >
-      <div className="relative w-full max-w-[440px] rounded-2xl border border-zinc-800 bg-[#070707] px-8 py-8 text-zinc-100 shadow-2xl shadow-black/60 sm:px-10">
+      <div className="relative w-full max-w-[440px] rounded-2xl border border-white/15 bg-zinc-950/70 backdrop-blur-2xl px-8 py-8 text-zinc-100 shadow-2xl shadow-zinc-950/30 sm:px-10">
         <button
           type="button"
           aria-label="Close authentication dialog"
           onClick={onClose}
-          className="absolute right-4 top-4 grid h-8 w-8 place-items-center rounded-full font-mono text-2xl leading-none text-zinc-500 hover:bg-zinc-900 hover:text-white"
+          className="absolute right-4 top-4 grid h-8 w-8 place-items-center rounded-full font-mono text-2xl leading-none text-zinc-200 hover:bg-white/10 hover:text-white"
         >
           ×
         </button>
 
         {isAuthConfirmed ? (
           <div className="flex min-h-[330px] flex-col items-center justify-center text-center">
-            <div className="mb-6 grid h-16 w-16 place-items-center rounded-full border border-zinc-700 bg-[#0b0b0b]">
+            <div className="mb-6 grid h-16 w-16 place-items-center rounded-full border border-white/20 bg-zinc-950/45">
               <span
                 aria-hidden="true"
                 className="grid h-9 w-9 place-items-center rounded-full border-2 border-zinc-200 font-mono text-lg text-white animate-[auth-success-pop_420ms_ease-out_both]"
@@ -186,7 +186,7 @@ export default function AuthModal({
                 ✓
               </span>
             </div>
-            <p className="font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-zinc-600">
+            <p className="font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-zinc-200">
               {isSignup ? "Account created" : "Signed in"}
             </p>
             <h2
@@ -195,7 +195,7 @@ export default function AuthModal({
             >
               {isSignup ? "Welcome to AtlasCore" : "Welcome back"}
             </h2>
-            <p className="mt-3 max-w-xs text-sm leading-6 text-zinc-500">
+            <p className="mt-3 max-w-xs text-sm leading-6 text-zinc-200">
               {isSignup
                 ? "Your account is ready. Opening your intelligence feed now."
                 : "Opening your intelligence feed now."}
@@ -203,7 +203,7 @@ export default function AuthModal({
           </div>
         ) : isOnboarding ? (
           <div className="animate-[auth-form-in_220ms_ease-out_both]">
-            <p className="mb-4 font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-zinc-600">
+            <p className="mb-4 font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-zinc-200">
               Tune your feed
             </p>
             <h2
@@ -212,13 +212,13 @@ export default function AuthModal({
             >
               What do you want to read?
             </h2>
-            <p className="mt-3 text-sm leading-6 text-zinc-500">
+            <p className="mt-3 text-sm leading-6 text-zinc-200">
               Pick a role and a few topics. AtlasCore will start your feed there.
             </p>
 
             <form onSubmit={handleOnboardingSubmit} className="mt-7 space-y-5">
               <div>
-                <p className="mb-2 font-mono text-[11px] font-bold uppercase tracking-[0.14em] text-zinc-500">
+                <p className="mb-2 font-mono text-[11px] font-bold uppercase tracking-[0.14em] text-zinc-200">
                   Role
                 </p>
                 <div className="grid grid-cols-2 gap-2">
@@ -232,8 +232,8 @@ export default function AuthModal({
                         onClick={() => setSelectedRole(role)}
                         className={`h-10 border px-3 text-left font-mono text-[11px] font-bold uppercase tracking-[0.1em] transition ${
                           isSelected
-                            ? "border-[#3b82f6] bg-blue-950/30 text-white"
-                            : "border-zinc-800 bg-[#0b0b0b] text-zinc-500 hover:border-zinc-600 hover:text-zinc-200"
+                            ? "border-white/45 bg-white/18 text-white"
+                            : "border-white/20 bg-zinc-950/45 text-zinc-200 hover:border-white/30 hover:text-white"
                         }`}
                       >
                         {role.replace("_", " ")}
@@ -244,7 +244,7 @@ export default function AuthModal({
               </div>
 
               <div>
-                <p className="mb-2 font-mono text-[11px] font-bold uppercase tracking-[0.14em] text-zinc-500">
+                <p className="mb-2 font-mono text-[11px] font-bold uppercase tracking-[0.14em] text-zinc-200">
                   Topics
                 </p>
                 <div className="flex max-h-40 flex-wrap gap-2 overflow-y-auto pr-1">
@@ -258,8 +258,8 @@ export default function AuthModal({
                         onClick={() => toggleValue(topic.label, selectedTopics, setSelectedTopics)}
                         className={`border px-2.5 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.1em] transition ${
                           isSelected
-                            ? "border-[#3b82f6] bg-blue-950/30 text-white"
-                            : "border-zinc-800 bg-[#0b0b0b] text-zinc-500 hover:border-zinc-600 hover:text-zinc-200"
+                            ? "border-white/45 bg-white/18 text-white"
+                            : "border-white/20 bg-zinc-950/45 text-zinc-200 hover:border-white/30 hover:text-white"
                         }`}
                       >
                         {topic.label}
@@ -270,7 +270,7 @@ export default function AuthModal({
               </div>
 
               <div>
-                <p className="mb-2 font-mono text-[11px] font-bold uppercase tracking-[0.14em] text-zinc-500">
+                <p className="mb-2 font-mono text-[11px] font-bold uppercase tracking-[0.14em] text-zinc-200">
                   Content
                 </p>
                 <div className="grid grid-cols-4 gap-2">
@@ -284,8 +284,8 @@ export default function AuthModal({
                         onClick={() => toggleValue(contentType, selectedContentTypes, setSelectedContentTypes)}
                         className={`h-10 border px-2 font-mono text-[10px] font-bold uppercase tracking-[0.1em] transition ${
                           isSelected
-                            ? "border-[#3b82f6] bg-blue-950/30 text-white"
-                            : "border-zinc-800 bg-[#0b0b0b] text-zinc-500 hover:border-zinc-600 hover:text-zinc-200"
+                            ? "border-white/45 bg-white/18 text-white"
+                            : "border-white/20 bg-zinc-950/45 text-zinc-200 hover:border-white/30 hover:text-white"
                         }`}
                       >
                         {contentType}
@@ -304,7 +304,7 @@ export default function AuthModal({
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="flex h-12 w-full items-center justify-center rounded-md bg-zinc-100 px-5 font-mono text-[12px] font-bold uppercase tracking-[0.14em] text-black hover:bg-white disabled:cursor-wait disabled:bg-zinc-700 disabled:text-zinc-400"
+                className="flex h-12 w-full items-center justify-center rounded-xl bg-zinc-100 px-5 font-mono text-[12px] font-bold uppercase tracking-[0.14em] text-black hover:bg-white disabled:cursor-wait disabled:bg-zinc-700 disabled:text-zinc-200"
               >
                 {isSubmitting ? (
                   <>
@@ -322,7 +322,7 @@ export default function AuthModal({
           </div>
         ) : (
           <div className="animate-[auth-form-in_220ms_ease-out_both]">
-            <p className="mb-4 font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-zinc-600">
+            <p className="mb-4 font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-zinc-200">
               {isSignup ? "Create account" : "Account access"}
             </p>
             <h2
@@ -331,7 +331,7 @@ export default function AuthModal({
             >
               {isSignup ? "Start with AtlasCore" : "Sign in to AtlasCore"}
             </h2>
-            <p className="mt-3 text-sm leading-6 text-zinc-500">
+            <p className="mt-3 text-sm leading-6 text-zinc-200">
               {isSignup
                 ? "Follow AI companies, launches, and research signals from one workspace."
                 : "Continue tracking your AI news and company intelligence feed."}
@@ -351,7 +351,7 @@ export default function AuthModal({
                     maxLength={120}
                     value={fullName}
                     onChange={(event) => setFullName(event.target.value)}
-                    className="h-12 w-full rounded-md border border-zinc-800 bg-[#0b0b0b] px-4 font-mono text-sm text-white outline-none placeholder:text-[11px] placeholder:uppercase placeholder:tracking-[0.11em] placeholder:text-zinc-700 hover:border-zinc-600 hover:bg-[#101010] hover:placeholder:text-zinc-500 focus:border-zinc-500 focus:bg-[#101010]"
+                    className="h-12 w-full rounded-xl border border-white/20 bg-zinc-950/45 px-4 font-mono text-sm text-white outline-none placeholder:text-[11px] placeholder:uppercase placeholder:tracking-[0.11em] placeholder:text-zinc-300 hover:border-white/30 hover:bg-zinc-950/55 hover:placeholder:text-zinc-300 focus:border-white/40 focus:bg-zinc-950/55"
                     placeholder="Name"
                   />
                 </div>
@@ -368,7 +368,7 @@ export default function AuthModal({
                 required
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
-                className="h-12 w-full rounded-md border border-zinc-800 bg-[#0b0b0b] px-4 font-mono text-sm text-white outline-none placeholder:text-[11px] placeholder:uppercase placeholder:tracking-[0.11em] placeholder:text-zinc-700 hover:border-zinc-600 hover:bg-[#101010] hover:placeholder:text-zinc-500 focus:border-zinc-500 focus:bg-[#101010]"
+                className="h-12 w-full rounded-xl border border-white/20 bg-zinc-950/45 px-4 font-mono text-sm text-white outline-none placeholder:text-[11px] placeholder:uppercase placeholder:tracking-[0.11em] placeholder:text-zinc-300 hover:border-white/30 hover:bg-zinc-950/55 hover:placeholder:text-zinc-300 focus:border-white/40 focus:bg-zinc-950/55"
                 placeholder="Email"
               />
             </div>
@@ -385,7 +385,7 @@ export default function AuthModal({
                   minLength={isSignup ? 8 : undefined}
                   value={password}
                   onChange={(event) => setPassword(event.target.value)}
-                  className="h-12 w-full rounded-md border border-zinc-800 bg-[#0b0b0b] px-4 font-mono text-sm text-white outline-none placeholder:text-[11px] placeholder:uppercase placeholder:tracking-[0.11em] placeholder:text-zinc-700 hover:border-zinc-600 hover:bg-[#101010] hover:placeholder:text-zinc-500 focus:border-zinc-500 focus:bg-[#101010]"
+                  className="h-12 w-full rounded-xl border border-white/20 bg-zinc-950/45 px-4 font-mono text-sm text-white outline-none placeholder:text-[11px] placeholder:uppercase placeholder:tracking-[0.11em] placeholder:text-zinc-300 hover:border-white/30 hover:bg-zinc-950/55 hover:placeholder:text-zinc-300 focus:border-white/40 focus:bg-zinc-950/55"
                   placeholder="Password"
                 />
               </div>
@@ -399,7 +399,7 @@ export default function AuthModal({
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="group flex h-12 w-full items-center justify-center overflow-hidden rounded-md bg-zinc-100 px-5 font-mono text-[12px] font-bold uppercase tracking-[0.14em] text-black hover:bg-white focus-visible:bg-white disabled:cursor-not-allowed disabled:bg-zinc-700 disabled:text-zinc-400"
+                className="group flex h-12 w-full items-center justify-center overflow-hidden rounded-xl bg-zinc-100 px-5 font-mono text-[12px] font-bold uppercase tracking-[0.14em] text-black hover:bg-white focus-visible:bg-white disabled:cursor-not-allowed disabled:bg-zinc-700 disabled:text-zinc-200"
               >
                 {isSubmitting ? (
                   <>
@@ -425,7 +425,7 @@ export default function AuthModal({
               </button>
             </form>
 
-            <p className="mt-6 text-center font-mono text-[11px] uppercase tracking-[0.1em] text-zinc-600">
+            <p className="mt-6 text-center font-mono text-[11px] uppercase tracking-[0.1em] text-zinc-200">
               {isSignup ? "Already have an account?" : "New to AtlasCore?"}{" "}
               <button
                 type="button"

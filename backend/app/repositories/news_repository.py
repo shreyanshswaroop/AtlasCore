@@ -18,6 +18,7 @@ def upsert_news_item(
         external_id=item_data["external_id"],
         title=item_data["title"],
         summary=item_data["summary"],
+        content=item_data.get("content", ""),
         source_name=item_data["source_name"],
         source_url=item_data["source_url"],
         image_url=item_data.get("image_url"),
@@ -34,6 +35,7 @@ def upsert_news_item(
         set_={
             "title": statement.excluded.title,
             "summary": statement.excluded.summary,
+            "content": statement.excluded.content,
             "source_name": statement.excluded.source_name,
             "source_url": statement.excluded.source_url,
             "image_url": statement.excluded.image_url,

@@ -101,6 +101,7 @@ def get_optional_current_user(
 def serialize_news_item(
     item: NewsItem,
     bookmarked_news_ids: set[int] | None = None,
+    include_content: bool = False,
 ) -> dict:
     source = news_sources_by_name.get(item.source_name)
     image_url = (
@@ -110,7 +111,7 @@ def serialize_news_item(
         else None
     )
 
-    return {
+    serialized_item = {
         "id": str(item.id),
         "title": item.title,
         "summary": item.summary,
@@ -130,6 +131,11 @@ def serialize_news_item(
         if bookmarked_news_ids is not None
         else False,
     }
+
+    if include_content:
+        serialized_item["content"] = item.content or item.summary
+
+    return serialized_item
 
 
 def get_upvote_count(item: NewsItem) -> int:
@@ -575,5 +581,9 @@ def get_news_item(
     )
 
     return {
-        "item": serialize_news_item(item, bookmarked_news_ids),
+        "item": serialize_news_item(
+            item,
+            bookmarked_news_ids,
+            include_content=True,
+        ),
     }

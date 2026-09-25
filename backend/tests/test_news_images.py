@@ -7,6 +7,8 @@ os.environ.setdefault("DATABASE_URL", "sqlite:///test.db")
 from app.core.config import Settings
 from app.core.news_source_catalog import NewsSource
 from app.services.news_ingestion_service import (
+    extract_article_content,
+    fetch_article_content,
     fetch_open_graph_image,
     is_duplicate_title_signature,
     title_signature,
@@ -84,6 +86,52 @@ class NewsImageTests(unittest.TestCase):
         )
 
         self.assertFalse(settings.atlascore_news_fetch_og_images)
+
+
+class NewsContentTests(unittest.TestCase):
+    def test_extracts_full_content_with_paragraph_breaks(self) -> None:
+        class Entry:
+            content = [
+                {
+                    "value": (
+                        "<p>First paragraph with <strong>formatting</strong>.</p>"
+                        "<p>Second paragraph.</p>"
+                    )
+                }
+            ]
+
+        self.assertEqual(
+            extract_article_content(Entry()),
+            "First paragraph with formatting.\n\nSecond paragraph.",
+        )
+
+    def test_fetches_article_content_from_article_paragraphs(self) -> None:
+        html = """
+        <html><body>
+            <nav><p>This paragraph is long enough to be ignored because it is not in article.</p></nav>
+            <article>
+                <p>This is the first article paragraph with enough text to pass the parser threshold.</p>
+                <p>This is the second article paragraph with enough text to pass the parser threshold.</p>
+            </article>
+        </body></html>
+        """
+
+        with patch(
+            "app.services.news_ingestion_service.httpx.get",
+            return_value=FakeResponse(html),
+        ):
+            article_content = fetch_article_content(
+                "https://example.com/articles/full-story",
+            )
+
+        self.assertEqual(
+            article_content,
+            (
+                "This is the first article paragraph with enough text to pass "
+                "the parser threshold.\n\nThis is the second article paragraph "
+                "with enough text to pass the parser threshold."
+            ),
+        )
 
 
 class NewsDuplicateTitleTests(unittest.TestCase):

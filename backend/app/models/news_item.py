@@ -33,6 +33,12 @@ class NewsItem(Base):
         default="",
     )
 
+    content: Mapped[str] = mapped_column(
+        Text,
+        nullable=False,
+        default="",
+    )
+
     source_name: Mapped[str] = mapped_column(
         String(120),
         nullable=False,

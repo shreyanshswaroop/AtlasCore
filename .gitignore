@@ -64,3 +64,4 @@ docker-compose.override.yml
 # ========================
 
 *.secret.yaml
+infrastructure/kubernetes/secrets.yaml

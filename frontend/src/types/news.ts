@@ -2,6 +2,7 @@ export type NewsItem = {
   id: string;
   title: string;
   summary: string;
+  content?: string;
   authors: string[];
   categories: string[];
   published_at: string;
