@@ -9,10 +9,10 @@ import { categories, type CategoryFilter } from "./CategoryFilters";
 
 const footerLinks = [
   { label: "About Us", href: "/about" },
-  { label: "Contact", href: "/about#contact" },
-  { label: "Submit News", href: "/about#submit-news" },
-  { label: "Privacy Policy", href: "/about#privacy" },
-  { label: "Terms of Service", href: "/about#terms" },
+  { label: "Contact", href: "/contact" },
+  { label: "Submit News", href: "/submit-news" },
+  { label: "Privacy Policy", href: "/privacy" },
+  { label: "Terms of Service", href: "/terms" },
 ];
 
 const monthLabels = [
@@ -143,35 +143,32 @@ export default function SiteFooter({ initialSyncStatus }: SiteFooterProps) {
   }
 
   return (
-    <footer id="about" className="border-t border-zinc-200 bg-[#f7f8fb]">
+    <footer id="about" className="border-t border-[#292929] bg-zinc-950">
       <div className="mx-auto max-w-[1500px] px-5 py-12 sm:px-8 sm:py-16">
         <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-[1.25fr_1fr_1fr_1.25fr]">
           <div>
-            <Link href="/" className="inline-flex items-center gap-3 text-zinc-950">
-              <span className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-zinc-950 via-red-600 to-zinc-950 text-sm font-black text-white">
-                AC
-              </span>
+            <Link href="/" className="inline-flex items-center text-zinc-100">
               <span className="text-xl font-bold">AtlasCore</span>
             </Link>
-            <p className="mt-6 max-w-sm text-sm font-medium leading-6 text-zinc-500">
+            <p className="mt-6 max-w-sm text-sm font-medium leading-6 text-zinc-400">
               Your focused destination for AI news, company signals, agents,
               models, infrastructure, and developer updates.
             </p>
-            <div className="mt-7 flex gap-5 text-sm font-bold text-zinc-500">
-              <a href="https://x.com" target="_blank" rel="noreferrer" className="hover:text-zinc-950">
+            <div className="mt-7 flex gap-5 text-sm font-bold text-zinc-400">
+              <a href="https://x.com" target="_blank" rel="noreferrer" className="hover:text-zinc-100">
                 X
               </a>
-              <a href="https://www.linkedin.com" target="_blank" rel="noreferrer" className="hover:text-zinc-950">
+              <a href="https://www.linkedin.com" target="_blank" rel="noreferrer" className="hover:text-zinc-100">
                 in
               </a>
-              <a href="https://github.com" target="_blank" rel="noreferrer" className="hover:text-zinc-950">
+              <a href="https://github.com" target="_blank" rel="noreferrer" className="hover:text-zinc-100">
                 GH
               </a>
             </div>
           </div>
 
           <div>
-            <h2 className="text-base font-semibold text-zinc-950">
+            <h2 className="text-base font-semibold text-zinc-100">
               Categories
             </h2>
             <div className="mt-5 grid gap-3">
@@ -180,7 +177,7 @@ export default function SiteFooter({ initialSyncStatus }: SiteFooterProps) {
                   <Link
                     key={category.label}
                     href={categoryHref(category)}
-                    className="text-sm font-medium text-zinc-500 hover:text-zinc-950"
+                    className="text-sm font-medium text-zinc-400 hover:text-zinc-100"
                   >
                     {category.label.replaceAll("_", " ")}
                   </Link>
@@ -188,7 +185,7 @@ export default function SiteFooter({ initialSyncStatus }: SiteFooterProps) {
               ) : (
                 <Link
                   href="/profile"
-                  className="text-sm font-medium text-zinc-500 hover:text-zinc-950"
+                  className="text-sm font-medium text-zinc-400 hover:text-zinc-100"
                 >
                   {hasLoadedUser ? "Choose topics" : "Loading topics..."}
                 </Link>
@@ -197,13 +194,13 @@ export default function SiteFooter({ initialSyncStatus }: SiteFooterProps) {
           </div>
 
           <div>
-            <h2 className="text-base font-semibold text-zinc-950">About</h2>
+            <h2 className="text-base font-semibold text-zinc-100">About</h2>
             <div className="mt-5 grid gap-3">
               {footerLinks.map((link) => (
                 <Link
                   key={link.label}
                   href={link.href}
-                  className="text-sm font-medium text-zinc-500 hover:text-zinc-950"
+                  className="text-sm font-medium text-zinc-400 hover:text-zinc-100"
                 >
                   {link.label}
                 </Link>
@@ -212,10 +209,10 @@ export default function SiteFooter({ initialSyncStatus }: SiteFooterProps) {
           </div>
 
           <div>
-            <h2 className="text-base font-semibold text-zinc-950">
+            <h2 className="text-base font-semibold text-zinc-100">
               Stay Updated
             </h2>
-            <p className="mt-5 max-w-sm text-sm font-medium leading-6 text-zinc-500">
+            <p className="mt-5 max-w-sm text-sm font-medium leading-6 text-zinc-400">
               Get the latest AI news and research signals delivered to your
               inbox.
             </p>
@@ -227,11 +224,11 @@ export default function SiteFooter({ initialSyncStatus }: SiteFooterProps) {
                 id="footer-email"
                 type="email"
                 placeholder="Enter your email"
-                className="h-11 w-full rounded-xl border border-transparent bg-white px-4 text-sm font-medium text-zinc-950 outline-none placeholder:text-zinc-400 focus:border-zinc-500"
+                className="h-11 w-full rounded-none border border-transparent bg-[#0e0e0e] px-4 text-sm font-medium text-zinc-100 outline-none placeholder:text-zinc-400 focus:border-zinc-500"
               />
               <button
                 type="submit"
-                className="flex h-11 w-full items-center justify-center rounded-xl bg-zinc-950 px-4 text-sm font-bold text-white hover:bg-zinc-950"
+                className="flex h-11 w-full items-center justify-center rounded-none bg-zinc-950 px-4 text-sm font-bold text-white hover:bg-zinc-950"
               >
                 Subscribe
               </button>
@@ -239,7 +236,7 @@ export default function SiteFooter({ initialSyncStatus }: SiteFooterProps) {
           </div>
         </div>
 
-        <div className="mt-12 flex flex-col gap-4 border-t border-zinc-200 pt-8 text-sm font-medium text-zinc-500 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-12 flex flex-col gap-4 text-sm font-medium text-zinc-400 sm:flex-row sm:items-center sm:justify-between">
           <p>© 2026 AtlasCore. All rights reserved.</p>
           <p>{syncStatusLabel}</p>
         </div>

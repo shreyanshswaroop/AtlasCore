@@ -258,7 +258,7 @@ function CategoryFiltersSkeleton() {
       {skeletonRows.map((row, index) => (
         <div
           key={row}
-          className="flex min-w-[150px] items-center justify-between gap-3 rounded-full border border-zinc-200 bg-white px-4 py-2.5"
+          className="flex min-w-[150px] items-center justify-between gap-3 rounded-none border border-[#292929] bg-[#0e0e0e] px-4 py-2.5"
         >
           <span className="flex min-w-0 items-center gap-2.5">
             <span className="skeleton-shimmer h-1.5 w-1.5" />
@@ -320,19 +320,19 @@ export default function CategoryFilters({
             aria-pressed={isActive}
             disabled={disabled}
             onClick={() => onCategoryChange(category)}
-            className={`group flex min-w-max items-center justify-between gap-3 rounded-full border px-4 py-2.5 text-left text-sm font-semibold ${
+            className={`group flex min-w-max items-center justify-between gap-3 rounded-none border px-4 py-2.5 text-left text-sm font-semibold ${
               isActive
-                ? "border-zinc-950 bg-zinc-950 text-white shadow-sm shadow-zinc-950/20"
-                : "border-zinc-200 bg-white text-zinc-600 hover:border-zinc-300 hover:text-zinc-950"
+                ? "border-[#444444] bg-[#171717] text-white"
+                : "border-[#292929] bg-[#0e0e0e] text-zinc-400 hover:border-[#444444] hover:text-zinc-100"
             }`}
           >
             <span className="flex min-w-0 items-center gap-2.5">
-              <span className={`grid h-5 w-5 shrink-0 place-items-center ${isActive ? "text-white" : "text-zinc-400 group-hover:text-zinc-950"}`}>
+              <span className={`grid h-5 w-5 shrink-0 place-items-center ${isActive ? "text-white" : "text-zinc-400 group-hover:text-zinc-100"}`}>
                 <CategoryIcon icon={category.icon} />
               </span>
               <span className="truncate">{category.label.replaceAll("_", " ")}</span>
             </span>
-            <span className={`flex shrink-0 items-center gap-2 text-sm font-bold ${isActive ? "text-white/90" : "text-zinc-400 group-hover:text-zinc-700"}`}>
+            <span className={`flex shrink-0 items-center gap-2 text-sm font-bold ${isActive ? "text-white/90" : "text-zinc-400 group-hover:text-zinc-300"}`}>
               <span>{count ?? category.count}</span>
             </span>
           </button>

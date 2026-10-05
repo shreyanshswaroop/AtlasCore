@@ -154,25 +154,25 @@ export default async function NewsPage({ params }: NewsPageProps) {
   ].slice(0, 4);
 
   return (
-    <main className="site-background min-h-screen text-zinc-950">
+    <main className="site-background min-h-screen text-zinc-100">
       <Navbar />
 
-      <article className="bg-[#fbfbfa]">
-        <header className="border-b border-zinc-200 bg-white">
+      <article className="bg-zinc-950">
+        <header className="border-b border-[#292929] bg-[#0e0e0e]">
           <div className="mx-auto max-w-[920px] px-5 py-7 sm:px-8 sm:py-9">
             <h1
-              className={`${headlineSerif.className} mx-auto max-w-3xl text-center text-3xl font-medium leading-[1.08] text-zinc-950 sm:text-4xl lg:text-[3rem]`}
+              className={`${headlineSerif.className} mx-auto max-w-3xl text-center text-3xl font-medium leading-[1.08] text-zinc-100 sm:text-4xl lg:text-[3rem]`}
             >
               {item.title}
             </h1>
 
             {item.summary ? (
-              <p className="mx-auto mt-5 max-w-2xl text-center text-base leading-7 text-zinc-600 sm:text-lg">
+              <p className="mx-auto mt-5 max-w-2xl text-center text-base leading-7 text-zinc-400 sm:text-lg">
                 {item.summary}
               </p>
             ) : null}
 
-            <div className="mt-7 overflow-hidden border border-zinc-200 bg-zinc-100">
+            <div className="mt-7 overflow-hidden border border-[#292929] bg-[#111111]">
               {item.image_url ? (
                 <img
                   src={item.image_url}
@@ -180,13 +180,13 @@ export default async function NewsPage({ params }: NewsPageProps) {
                   className="h-[200px] w-full object-cover sm:h-[280px] lg:h-[360px]"
                 />
               ) : (
-                <div className="news-preview min-h-[240px] bg-zinc-100 p-8">
-                  <div className="border-t border-zinc-300 pt-5">
-                    <p className="text-xs font-bold uppercase tracking-[0.18em] text-zinc-500">
+                <div className="news-preview min-h-[240px] bg-[#111111] p-8">
+                  <div className="border-t border-[#444444] pt-5">
+                    <p className="text-xs font-bold uppercase tracking-[0.18em] text-zinc-400">
                       AtlasCore
                     </p>
                     <p
-                      className={`${headlineSerif.className} mt-10 max-w-3xl text-3xl font-medium leading-none text-zinc-950`}
+                      className={`${headlineSerif.className} mt-10 max-w-3xl text-3xl font-medium leading-none text-zinc-100`}
                     >
                       {item.title}
                     </p>
@@ -210,7 +210,7 @@ export default async function NewsPage({ params }: NewsPageProps) {
               <p className="text-xs font-bold uppercase tracking-[0.18em] text-zinc-400">
                 Introduction
               </p>
-              <p className="mt-4 text-lg font-semibold leading-7 text-zinc-800 sm:text-xl sm:leading-8">
+              <p className="mt-4 text-lg font-semibold leading-7 text-zinc-200 sm:text-xl sm:leading-8">
                 {item.summary ||
                   "A closer look at the latest development moving through the AI ecosystem."}
               </p>
@@ -219,15 +219,15 @@ export default async function NewsPage({ params }: NewsPageProps) {
             {takeaways.length ? (
               <section
                 id="takeaways"
-                className="mt-9 scroll-mt-28 border border-zinc-200 bg-white p-6 sm:p-7"
+                className="mt-9 scroll-mt-28 border border-[#292929] bg-[#0e0e0e] p-6 sm:p-7"
               >
-                <div className="flex items-center justify-between gap-6 border-b border-zinc-200 pb-4">
-                  <p className="text-xs font-bold uppercase tracking-[0.18em] text-zinc-500">
+                <div className="flex items-center justify-between gap-6 border-b border-[#292929] pb-4">
+                  <p className="text-xs font-bold uppercase tracking-[0.18em] text-zinc-400">
                     Takeaways
                   </p>
                   <span className="text-xl text-zinc-400">-</span>
                 </div>
-                <ul className="mt-5 space-y-4 text-sm leading-6 text-zinc-700 sm:text-base sm:leading-7">
+                <ul className="mt-5 space-y-4 text-sm leading-6 text-zinc-300 sm:text-base sm:leading-7">
                   {takeaways.map((takeaway, index) => (
                     <li key={`${takeaway.slice(0, 32)}-${index}`} className="flex gap-4">
                       <span className="mt-3 h-1.5 w-1.5 shrink-0 bg-[#078b35]" />
@@ -241,7 +241,7 @@ export default async function NewsPage({ params }: NewsPageProps) {
             {bodyParagraphs.length ? (
               <section
                 id="full-story"
-                className="mt-10 scroll-mt-28 space-y-5 text-base font-medium leading-7 text-zinc-800 sm:text-[1.05rem] sm:leading-8"
+                className="mt-10 scroll-mt-28 space-y-5 text-base font-medium leading-7 text-zinc-200 sm:text-[1.05rem] sm:leading-8"
               >
                 <p className="text-xs font-bold uppercase tracking-[0.18em] text-zinc-400">
                   Full story
@@ -255,7 +255,7 @@ export default async function NewsPage({ params }: NewsPageProps) {
             ) : (
               <p
                 id="full-story"
-                className="mt-10 scroll-mt-28 text-base font-medium leading-7 text-zinc-800 sm:text-[1.05rem] sm:leading-8"
+                className="mt-10 scroll-mt-28 text-base font-medium leading-7 text-zinc-200 sm:text-[1.05rem] sm:leading-8"
               >
                 The full story is not available in the feed yet. Open the
                 original source for the complete report.
@@ -265,12 +265,12 @@ export default async function NewsPage({ params }: NewsPageProps) {
             {item.topic_reason && (
               <section
                 id="atlascore-signal"
-                className="mt-10 scroll-mt-28 border-t border-zinc-200 pt-7"
+                className="mt-10 scroll-mt-28 border-t border-[#292929] pt-7"
               >
-                <p className="text-xs font-bold uppercase tracking-[0.14em] text-zinc-500">
+                <p className="text-xs font-bold uppercase tracking-[0.14em] text-zinc-400">
                   AtlasCore signal
                 </p>
-                <p className="mt-4 text-base leading-7 text-zinc-600">
+                <p className="mt-4 text-base leading-7 text-zinc-400">
                   {item.topic_reason}
                 </p>
               </section>
@@ -278,9 +278,9 @@ export default async function NewsPage({ params }: NewsPageProps) {
 
             <div
               id="article-topics"
-              className="mt-10 scroll-mt-28 border-t border-zinc-200 pt-6"
+              className="mt-10 scroll-mt-28 border-t border-[#292929] pt-6"
             >
-              <p className="text-sm font-semibold text-zinc-700">
+              <p className="text-sm font-semibold text-zinc-300">
                 Topics:
                 {topics.map((category) => (
                   <span key={category} className="ml-4 text-[#078b35]">
@@ -289,13 +289,13 @@ export default async function NewsPage({ params }: NewsPageProps) {
                 ))}
               </p>
             </div>
-            <footer className="mt-12 border-t border-zinc-200 pt-7">
+            <footer className="mt-12 border-t border-[#292929] pt-7">
               <div className="grid gap-6 text-sm sm:grid-cols-3">
                 <div>
                   <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-zinc-400">
                     Source
                   </p>
-                  <p className="mt-2 font-bold text-zinc-950">{sourceName}</p>
+                  <p className="mt-2 font-bold text-zinc-100">{sourceName}</p>
                   <p className="mt-1 text-xs font-semibold uppercase tracking-[0.08em] text-zinc-400">
                     {publishedDate}
                   </p>
@@ -305,10 +305,10 @@ export default async function NewsPage({ params }: NewsPageProps) {
                   <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-zinc-400">
                     Article info
                   </p>
-                  <p className="mt-2 font-semibold text-zinc-700">
+                  <p className="mt-2 font-semibold text-zinc-300">
                     {readingMinutes} min read
                   </p>
-                  <p className="mt-1 font-semibold text-zinc-700">
+                  <p className="mt-1 font-semibold text-zinc-300">
                     {formatTopic(primaryTopic)}
                   </p>
                 </div>
@@ -317,7 +317,7 @@ export default async function NewsPage({ params }: NewsPageProps) {
                   <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-zinc-400">
                     Next reads
                   </p>
-                  <div className="mt-2 grid gap-2 font-semibold text-zinc-700">
+                  <div className="mt-2 grid gap-2 font-semibold text-zinc-300">
                     <Link href="/#discover" className="hover:text-[#078b35]">
                       Latest stories
                     </Link>
@@ -342,7 +342,7 @@ export default async function NewsPage({ params }: NewsPageProps) {
                   href={item.source_url}
                   target="_blank"
                   rel="noreferrer"
-                  className="mt-7 inline-flex rounded-full bg-zinc-950 px-5 py-2.5 text-sm font-bold text-white hover:bg-[#078b35]"
+                  className="mt-7 inline-flex rounded-none bg-zinc-950 px-5 py-2.5 text-sm font-bold text-white hover:bg-[#078b35]"
                 >
                   Open original ↗
                 </a>

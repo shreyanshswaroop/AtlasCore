@@ -10,9 +10,9 @@ function SkeletonPill({ width }: { width: string }) {
 
 function SkeletonNewsRow({ index }: { index: number }) {
   return (
-    <article className="grid gap-5 border-b border-zinc-100 py-6 last:border-b-0 md:grid-cols-[56px_minmax(0,1fr)_220px] md:items-center">
+    <article className="grid gap-5 border-b border-[#242424] py-6 last:border-b-0 md:grid-cols-[56px_minmax(0,1fr)_220px] md:items-center">
       <div className="hidden md:block">
-        <div className="skeleton-shimmer h-12 w-12 rounded-xl" />
+        <div className="skeleton-shimmer h-12 w-12 rounded-none" />
       </div>
 
       <div className="min-w-0">
@@ -31,14 +31,14 @@ function SkeletonNewsRow({ index }: { index: number }) {
         </div>
       </div>
 
-      <div className="skeleton-shimmer h-28 rounded-xl border border-zinc-200 md:h-24" />
+      <div className="skeleton-shimmer h-28 rounded-none border border-[#292929] md:h-24" />
     </article>
   );
 }
 
 export default function CompanyLoading() {
   return (
-    <main className="min-h-screen bg-white text-zinc-950">
+    <main className="min-h-screen bg-[#0e0e0e] text-zinc-100">
       <Navbar />
 
       <section
@@ -47,16 +47,16 @@ export default function CompanyLoading() {
       >
         <div className="mb-10 flex items-center gap-3">
           <span className="skeleton-shimmer h-3 w-24" />
-          <span className="h-1 w-1 bg-zinc-300" />
+          <span className="h-1 w-1 bg-[#1c1c1c]" />
           <span className="skeleton-shimmer h-3 w-28" />
         </div>
 
         <div className="grid gap-7 lg:grid-cols-[330px_minmax(0,1fr)] xl:grid-cols-[360px_minmax(0,1fr)]">
           <aside className="lg:sticky lg:top-24 lg:self-start">
-            <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
+            <div className="rounded-none border border-[#292929] bg-[#0e0e0e] p-6 shadow-sm">
               <div className="flex items-start justify-between gap-4">
-                <span className="skeleton-shimmer h-16 w-16 rounded-2xl" />
-                <span className="skeleton-shimmer h-9 w-28 rounded-full border border-zinc-200" />
+                <span className="skeleton-shimmer h-16 w-16 rounded-none" />
+                <span className="skeleton-shimmer h-9 w-28 rounded-none border border-[#292929]" />
               </div>
 
               <div className="mt-12">
@@ -71,7 +71,7 @@ export default function CompanyLoading() {
                 <span className="skeleton-shimmer block h-4 w-[64%]" />
               </div>
 
-              <div className="mt-8 border-t border-zinc-100 pt-6">
+              <div className="mt-8 border-t border-[#242424] pt-6">
                 <span className="skeleton-shimmer mb-4 block h-3 w-24" />
                 <div className="flex flex-wrap gap-2">
                   {skeletonPills.map((pill, index) => (
@@ -95,7 +95,7 @@ export default function CompanyLoading() {
                 </div>
               </div>
 
-              <div className="mt-8 border-t border-zinc-100 pt-6">
+              <div className="mt-8 border-t border-[#242424] pt-6">
                 <span className="skeleton-shimmer mb-4 block h-3 w-16" />
                 <div className="flex gap-3">
                   <span className="skeleton-shimmer h-10 w-28" />
@@ -106,7 +106,7 @@ export default function CompanyLoading() {
           </aside>
 
           <section className="min-w-0">
-            <header className="border-b border-zinc-200 pb-5">
+            <header className="border-b border-[#292929] pb-5">
               <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
                 <div>
                   <span className="skeleton-shimmer block h-3 w-20" />
@@ -120,9 +120,9 @@ export default function CompanyLoading() {
               </div>
             </header>
 
-            <div className="grid gap-6 border-b border-zinc-100 py-7 xl:grid-cols-[minmax(0,1fr)_320px] xl:items-center">
+            <div className="grid gap-6 border-b border-[#242424] py-7 xl:grid-cols-[minmax(0,1fr)_320px] xl:items-center">
               <div className="flex min-w-0 gap-4">
-                <span className="skeleton-shimmer h-10 w-10 shrink-0 rounded-2xl" />
+                <span className="skeleton-shimmer h-10 w-10 shrink-0 rounded-none" />
                 <div className="min-w-0 flex-1">
                   <span className="skeleton-shimmer block h-3 w-32" />
                   <span className="skeleton-shimmer mt-4 block h-7 w-[88%]" />
@@ -133,7 +133,7 @@ export default function CompanyLoading() {
                 </div>
               </div>
 
-              <span className="skeleton-shimmer h-44 rounded-xl border border-zinc-200" />
+              <span className="skeleton-shimmer h-44 rounded-none border border-[#292929]" />
             </div>
 
             <div role="status" aria-label="Loading company stories">

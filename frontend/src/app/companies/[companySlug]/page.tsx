@@ -123,7 +123,7 @@ function CompanyLogo({
 
   return (
     <span
-      className={`grid ${dimensionClass} shrink-0 place-items-center rounded-2xl border border-zinc-200 bg-white font-mono text-xs font-bold uppercase text-zinc-950 shadow-sm`}
+      className={`grid ${dimensionClass} shrink-0 place-items-center rounded-none border border-[#292929] bg-[#0e0e0e] font-mono text-xs font-bold uppercase text-zinc-100 shadow-sm`}
     >
       {logoUrl ? (
         <img
@@ -150,9 +150,9 @@ function NewsRow({
   const detailUrl = `/news/${encodeURIComponent(item.id)}`;
 
   return (
-    <article className="grid gap-5 border-b border-zinc-100 py-6 last:border-b-0 md:grid-cols-[56px_minmax(0,1fr)_220px] md:items-center">
+    <article className="grid gap-5 border-b border-[#242424] py-6 last:border-b-0 md:grid-cols-[56px_minmax(0,1fr)_220px] md:items-center">
       <div className="hidden md:block">
-        <div className="grid h-12 w-12 place-items-center rounded-xl border border-zinc-200 bg-zinc-50 text-[11px] font-bold uppercase tracking-[0.08em] text-zinc-400">
+        <div className="grid h-12 w-12 place-items-center rounded-none border border-[#292929] bg-[#111111] text-[11px] font-bold uppercase tracking-[0.08em] text-zinc-400">
           <span>{String(index + 1).padStart(2, "0")}</span>
         </div>
       </div>
@@ -160,7 +160,7 @@ function NewsRow({
       <div className="min-w-0">
         <Link
           href={detailUrl}
-          className="text-lg font-semibold leading-snug text-zinc-950 decoration-zinc-950 underline-offset-4 hover:underline"
+          className="text-lg font-semibold leading-snug text-zinc-100 decoration-zinc-100 underline-offset-4 hover:underline"
         >
           {item.title}
         </Link>
@@ -173,7 +173,7 @@ function NewsRow({
           <span>{formatDate(item.published_at)}</span>
         </div>
 
-        <p className="mt-3 line-clamp-2 max-w-3xl text-sm leading-6 text-zinc-500">
+        <p className="mt-3 line-clamp-2 max-w-3xl text-sm leading-6 text-zinc-400">
           {item.summary}
         </p>
       </div>
@@ -181,7 +181,7 @@ function NewsRow({
       <Link
         href={detailUrl}
         aria-label={`Open ${item.title}`}
-        className="block h-28 overflow-hidden rounded-xl border border-zinc-200 bg-zinc-50 text-zinc-950 md:h-24"
+        className="block h-28 overflow-hidden rounded-none border border-[#292929] bg-[#111111] text-zinc-100 md:h-24"
       >
         {item.image_url ? (
           <img
@@ -190,7 +190,7 @@ function NewsRow({
             className="h-full w-full object-cover"
           />
         ) : (
-          <div className="news-preview flex h-full items-center justify-center bg-[#eef1f6] text-[10px] font-bold uppercase tracking-[0.14em] text-zinc-500">
+          <div className="news-preview flex h-full items-center justify-center bg-[#111111] text-[10px] font-bold uppercase tracking-[0.14em] text-zinc-400">
             AtlasCore
           </div>
         )}
@@ -220,12 +220,12 @@ export default async function CompanyPage({ params }: CompanyPageProps) {
   );
 
   return (
-    <main className="min-h-screen bg-white text-zinc-950">
+    <main className="min-h-screen bg-[#0e0e0e] text-zinc-100">
       <Navbar />
 
       <section className="news-layout-enter mx-auto max-w-[1379px] px-5 py-10 sm:px-8 sm:py-14">
         <div className="mb-8 flex flex-wrap items-center gap-3 text-[11px] font-bold uppercase tracking-[0.12em] text-zinc-400">
-          <Link href="/?view=leaderboard#discover" className="hover:text-zinc-950">
+          <Link href="/?view=leaderboard#discover" className="hover:text-zinc-100">
             Leaderboard
           </Link>
           <span>/</span>
@@ -234,32 +234,32 @@ export default async function CompanyPage({ params }: CompanyPageProps) {
 
         <div className="grid gap-7 lg:grid-cols-[330px_minmax(0,1fr)] xl:grid-cols-[360px_minmax(0,1fr)]">
           <aside className="lg:sticky lg:top-24 lg:self-start">
-            <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
+            <div className="rounded-none border border-[#292929] bg-[#0e0e0e] p-6 shadow-sm">
               <div className="flex items-start justify-between gap-4">
                 <CompanyLogo
                   company={company.company}
                   logoUrl={company.logo_url}
                 />
 
-                <span className="rounded-full border border-zinc-200 bg-zinc-50 px-3 py-2 text-[10px] font-bold uppercase tracking-[0.12em] text-zinc-600">
+                <span className="rounded-none border border-[#292929] bg-[#111111] px-3 py-2 text-[10px] font-bold uppercase tracking-[0.12em] text-zinc-400">
                   {data.count} stories
                 </span>
               </div>
 
               <div className="mt-6">
-                <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500">
+                <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-400">
                   About company
                 </p>
-                <h1 className="mt-2 text-3xl font-semibold tracking-tight text-zinc-950">
+                <h1 className="mt-2 text-3xl font-semibold tracking-tight text-zinc-100">
                   {company.company}
                 </h1>
               </div>
 
-              <p className="mt-5 text-sm leading-7 text-zinc-500">
+              <p className="mt-5 text-sm leading-7 text-zinc-400">
                 {profileCopy}
               </p>
 
-              <div className="mt-7 border-t border-zinc-100 pt-5">
+              <div className="mt-7 border-t border-[#242424] pt-5">
                 <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.14em] text-zinc-400">
                   Products
                 </p>
@@ -271,7 +271,7 @@ export default async function CompanyPage({ params }: CompanyPageProps) {
                   ).map((alias) => (
                     <span
                       key={alias}
-                      className="rounded-full bg-zinc-100 px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-[0.08em] text-zinc-600"
+                      className="rounded-none bg-[#111111] px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-[0.08em] text-zinc-400"
                     >
                       {alias}
                     </span>
@@ -289,7 +289,7 @@ export default async function CompanyPage({ params }: CompanyPageProps) {
                     {topTopics.map((topic) => (
                       <span
                         key={topic}
-                        className="rounded-full border border-zinc-200 bg-white px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-[0.08em] text-zinc-600"
+                        className="rounded-none border border-[#292929] bg-[#0e0e0e] px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-[0.08em] text-zinc-400"
                       >
                         {topicLabels[topic] ?? topic}
                       </span>
@@ -300,7 +300,7 @@ export default async function CompanyPage({ params }: CompanyPageProps) {
                 )}
               </div>
 
-              <div className="mt-7 border-t border-zinc-100 pt-5">
+              <div className="mt-7 border-t border-[#242424] pt-5">
                 <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.14em] text-zinc-400">
                   Links
                 </p>
@@ -311,14 +311,14 @@ export default async function CompanyPage({ params }: CompanyPageProps) {
                       href={`https://${company.domain}`}
                       target="_blank"
                       rel="noreferrer"
-                      className="rounded-full border border-zinc-200 px-3 py-2 text-[10px] font-bold uppercase tracking-[0.12em] text-zinc-600 hover:border-zinc-400 hover:text-zinc-950"
+                      className="rounded-none border border-[#292929] px-3 py-2 text-[10px] font-bold uppercase tracking-[0.12em] text-zinc-400 hover:border-zinc-500 hover:text-zinc-100"
                     >
                       Website ↗
                     </a>
                   )}
                   <Link
                     href={`/?view=news#discover`}
-                    className="rounded-full border border-zinc-200 px-3 py-2 text-[10px] font-bold uppercase tracking-[0.12em] text-zinc-600 hover:border-zinc-400 hover:text-zinc-950"
+                    className="rounded-none border border-[#292929] px-3 py-2 text-[10px] font-bold uppercase tracking-[0.12em] text-zinc-400 hover:border-zinc-500 hover:text-zinc-100"
                   >
                     News index
                   </Link>
@@ -328,20 +328,20 @@ export default async function CompanyPage({ params }: CompanyPageProps) {
           </aside>
 
           <section className="min-w-0">
-            <header className="border-b border-zinc-200 pb-5">
+            <header className="border-b border-[#292929] pb-5">
               <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
                 <div>
-                  <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-zinc-500">
+                  <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-zinc-400">
                     News
                   </p>
-                  <h2 className="mt-2 text-3xl font-semibold tracking-tight text-zinc-950">
+                  <h2 className="mt-2 text-3xl font-semibold tracking-tight text-zinc-100">
                     Latest {company.company} stories
                   </h2>
                 </div>
 
-                <div className="flex items-center gap-5 text-sm font-semibold text-zinc-500">
+                <div className="flex items-center gap-5 text-sm font-semibold text-zinc-400">
                   <span>Latest</span>
-                  <span className="border-b-2 border-zinc-950 pb-1 text-zinc-950">
+                  <span className="border-b-2 border-zinc-100 pb-1 text-zinc-100">
                     Last 30 days
                   </span>
                 </div>
@@ -349,7 +349,7 @@ export default async function CompanyPage({ params }: CompanyPageProps) {
             </header>
 
             {latestStory && (
-              <div className="grid gap-6 border-b border-zinc-100 py-7 xl:grid-cols-[minmax(0,1fr)_320px] xl:items-center">
+              <div className="grid gap-6 border-b border-[#242424] py-7 xl:grid-cols-[minmax(0,1fr)_320px] xl:items-center">
                 <div className="flex min-w-0 gap-4">
                   <CompanyLogo
                     company={company.company}
@@ -362,11 +362,11 @@ export default async function CompanyPage({ params }: CompanyPageProps) {
                     </p>
                     <Link
                       href={`/news/${encodeURIComponent(latestStory.id)}`}
-                      className="mt-2 block text-2xl font-semibold leading-tight text-zinc-950 decoration-zinc-950 underline-offset-4 hover:underline"
+                      className="mt-2 block text-2xl font-semibold leading-tight text-zinc-100 decoration-zinc-100 underline-offset-4 hover:underline"
                     >
                       {latestStory.title}
                     </Link>
-                    <p className="mt-4 line-clamp-3 text-sm leading-6 text-zinc-500">
+                    <p className="mt-4 line-clamp-3 text-sm leading-6 text-zinc-400">
                       {latestStory.summary}
                     </p>
                   </div>
@@ -374,7 +374,7 @@ export default async function CompanyPage({ params }: CompanyPageProps) {
 
                 <Link
                   href={`/news/${encodeURIComponent(latestStory.id)}`}
-                  className="h-44 overflow-hidden rounded-xl border border-zinc-200 bg-zinc-50"
+                  className="h-44 overflow-hidden rounded-none border border-[#292929] bg-[#111111]"
                 >
                   {latestStory.image_url ? (
                     <img
@@ -383,7 +383,7 @@ export default async function CompanyPage({ params }: CompanyPageProps) {
                       className="h-full w-full object-cover"
                     />
                   ) : (
-                    <div className="news-preview flex h-full items-center justify-center bg-[#eef1f6] text-[10px] font-bold uppercase tracking-[0.14em] text-zinc-500">
+                    <div className="news-preview flex h-full items-center justify-center bg-[#111111] text-[10px] font-bold uppercase tracking-[0.14em] text-zinc-400">
                       AtlasCore
                     </div>
                   )}
@@ -398,9 +398,9 @@ export default async function CompanyPage({ params }: CompanyPageProps) {
                 ))}
               </div>
             ) : (
-              <div className="rounded-2xl border border-dashed border-zinc-300 px-6 py-20 text-center">
-                <h2 className="text-2xl font-semibold text-zinc-950">No indexed news found</h2>
-                <p className="mt-3 text-sm text-zinc-500">
+              <div className="rounded-none border border-dashed border-[#444444] px-6 py-20 text-center">
+                <h2 className="text-2xl font-semibold text-zinc-100">No indexed news found</h2>
+                <p className="mt-3 text-sm text-zinc-400">
                   This company is in the leaderboard catalog, but no matching news
                   is currently stored in AtlasCore.
                 </p>

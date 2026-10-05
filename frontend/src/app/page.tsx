@@ -55,10 +55,10 @@ export default async function Home({ searchParams }: HomeProps) {
   const featuredImageUrl =
     featuredItem?.image_url ?? data.items.find((item) => item.image_url)?.image_url;
   return (
-    <main className="site-background min-h-screen text-zinc-950">
+    <main className="site-background min-h-screen text-zinc-100">
       <Navbar />
 
-      <section className="border-b border-zinc-200 bg-white">
+      <section className="border-b border-[#292929] bg-[#0e0e0e]">
         <div>
           {featuredItem ? (
             <Link
@@ -93,13 +93,13 @@ export default async function Home({ searchParams }: HomeProps) {
               </div>
             </Link>
           ) : (
-            <div className="rounded-[2rem] border border-dashed border-zinc-300 bg-zinc-50 px-6 py-20 text-center">
+            <div className="rounded-none border border-dashed border-[#444444] bg-[#111111] px-6 py-20 text-center">
               <h1
-                className={`${headlineSerif.className} text-5xl font-medium text-zinc-950`}
+                className="font-serif text-4xl font-normal tracking-tight text-zinc-100"
               >
                 Latest in AI
               </h1>
-              <p className="mt-4 text-zinc-600">
+              <p className="mt-4 text-zinc-400">
                 Search, filter, and read the AI news shaping intelligent systems.
               </p>
             </div>

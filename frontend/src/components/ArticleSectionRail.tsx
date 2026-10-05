@@ -65,13 +65,13 @@ export default function ArticleSectionRail({
               key={`${section.href}-${section.title}`}
               href={section.href}
               className={`grid grid-cols-[2px_190px] gap-4 pl-4 transition-colors duration-300 ${
-                isActive ? "text-zinc-950" : "text-zinc-500 hover:text-zinc-950"
+                isActive ? "text-zinc-100" : "text-zinc-400 hover:text-zinc-100"
               }`}
             >
               <span
                 style={{ height: section.markerHeight }}
                 className={`w-[2px] transition-colors duration-300 ${
-                  isActive ? "bg-zinc-950/70" : "bg-zinc-950/14"
+                  isActive ? "bg-zinc-100/70" : "bg-zinc-100/20"
                 }`}
               />
               <span className="-translate-x-2 pt-0.5 opacity-0 transition-all duration-300 ease-out group-hover:translate-x-0 group-hover:opacity-100">

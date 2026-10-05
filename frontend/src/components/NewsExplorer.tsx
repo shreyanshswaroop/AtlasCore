@@ -71,7 +71,7 @@ function NewsCardSkeleton() {
   return (
     <article
       aria-hidden="true"
-      className="flex min-h-[410px] flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white"
+      className="flex min-h-[410px] flex-col overflow-hidden rounded-none border border-[#292929] bg-[#0e0e0e]"
     >
       <div className="skeleton-shimmer h-44" />
 
@@ -89,7 +89,7 @@ function NewsCardSkeleton() {
         <div className="mt-auto pt-8" />
       </div>
 
-      <div className="flex items-center justify-between border-t border-zinc-100 px-5 py-5">
+      <div className="flex items-center justify-between border-t border-[#242424] px-5 py-5">
         <div className="skeleton-shimmer h-8 w-24" />
         <div className="flex items-center gap-3">
           <div className="skeleton-shimmer h-5 w-4" />
@@ -112,7 +112,7 @@ function LeaderboardSkeleton() {
       {leaderboardSkeletonRows.map((row, index) => (
         <div
           key={row}
-          className="grid min-h-16 grid-cols-[70px_minmax(0,1fr)] items-center border-b border-zinc-100 px-4 py-3 last:border-b-0 sm:grid-cols-[90px_minmax(0,1fr)_minmax(180px,360px)]"
+          className="grid min-h-16 grid-cols-[70px_minmax(0,1fr)] items-center border-b border-[#242424] px-4 py-3 last:border-b-0 sm:grid-cols-[90px_minmax(0,1fr)_minmax(180px,360px)]"
         >
           <span className="skeleton-shimmer h-4 w-9" />
 
@@ -526,9 +526,9 @@ export default function NewsExplorer({
   function renderLeaderboard() {
     if (leaderboardItems.length === 0) {
       return (
-        <div className="rounded-2xl border border-dashed border-zinc-300 bg-white px-6 py-20 text-center">
-          <h3 className="text-2xl font-semibold text-zinc-950">No companies found</h3>
-          <p className="mt-3 text-sm text-zinc-500">
+        <div className="rounded-none border border-dashed border-[#444444] bg-[#0e0e0e] px-6 py-20 text-center">
+          <h3 className="text-2xl font-semibold text-zinc-100">No companies found</h3>
+          <p className="mt-3 text-sm text-zinc-400">
             {selectedLeaderboardTopics.length > 0
               ? "No companies matched the selected topics."
               : "The company catalog is empty."}
@@ -538,19 +538,19 @@ export default function NewsExplorer({
     }
 
     return (
-      <div className="overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm">
+      <div className="overflow-hidden rounded-none border border-[#292929] bg-[#0e0e0e] shadow-sm">
         {leaderboardItems.map((item) => (
           <Link
             key={item.company}
             href={`/companies/${item.slug}`}
-            className="grid min-h-16 grid-cols-[70px_minmax(0,1fr)] items-center border-b border-zinc-100 px-4 py-3 transition hover:bg-zinc-50 last:border-b-0 sm:grid-cols-[90px_minmax(0,1fr)_minmax(180px,360px)]"
+            className="grid min-h-16 grid-cols-[70px_minmax(0,1fr)] items-center border-b border-[#242424] px-4 py-3 transition hover:bg-[#111111] last:border-b-0 sm:grid-cols-[90px_minmax(0,1fr)_minmax(180px,360px)]"
           >
             <span className="text-sm font-semibold text-zinc-400">
               #{item.rank}
             </span>
 
             <div className="flex min-w-0 items-center gap-3">
-              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-zinc-200 bg-zinc-50 text-[11px] font-bold uppercase text-zinc-700">
+              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-none border border-[#292929] bg-[#111111] text-[11px] font-bold uppercase text-zinc-300">
                 {item.logo_url ? (
                   <img
                     src={item.logo_url}
@@ -561,12 +561,12 @@ export default function NewsExplorer({
                   getCompanyInitials(item.company)
                 )}
               </span>
-              <span className="truncate text-base font-semibold text-zinc-950">
+              <span className="truncate text-base font-semibold text-zinc-100">
                 {item.company}
               </span>
             </div>
 
-            <span className="hidden truncate text-sm text-zinc-500 sm:block">
+            <span className="hidden truncate text-sm text-zinc-400 sm:block">
               {hasCompanyAliases(item)
                 ? formatCompanyAliases(item)
                 : item.domain || "Company"}
@@ -579,18 +579,18 @@ export default function NewsExplorer({
 
   return (
     <section id="discover" className="mx-auto max-w-[465px] px-5 pb-10 pt-8 sm:max-w-[489px] sm:px-8 sm:pb-16 sm:pt-10 md:max-w-[934px] xl:max-w-[1379px]">
-      {error && <div className="mb-8 rounded-xl border border-red-200 bg-red-50 px-5 py-4 text-sm font-semibold text-red-700">{error}</div>}
+      {error && <div className="mb-8 rounded-none border border-red-900 bg-red-950/40 px-5 py-4 text-sm font-semibold text-red-300">{error}</div>}
 
       <div className="mb-7">
         <div className={`${activeView === "leaderboard" ? "mb-5" : ""} flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between`}>
           <div>
-            <h2 className="text-3xl font-semibold text-zinc-950 sm:text-4xl">
+            <h2 className="font-serif text-4xl font-normal tracking-tight text-zinc-100">
               {activeView === "leaderboard" ? "Company leaderboard" : "Latest in AI"}
             </h2>
           </div>
         </div>
         {activeView === "leaderboard" && (
-          <div className="rounded-2xl border border-zinc-200 bg-white p-3 shadow-sm">
+          <div className="rounded-none border border-[#292929] bg-[#0e0e0e] p-3 shadow-sm">
             <CategoryFilters
               activeCategory={activeCategory}
               activeCategories={selectedLeaderboardTopics}
@@ -624,8 +624,8 @@ export default function NewsExplorer({
                       onClick={() => void handleRankModeChange(rankMode)}
                       className={`pb-1 transition-colors disabled:cursor-wait ${
                         newsRankMode === rankMode
-                          ? "border-b-2 border-zinc-950 text-zinc-950"
-                          : "text-zinc-500 hover:text-zinc-950"
+                          ? "border-b-2 border-zinc-100 text-zinc-100"
+                          : "text-zinc-400 hover:text-zinc-100"
                       }`}
                     >
                       {rankMode === "latest" ? "Latest" : "Trending"}
@@ -633,19 +633,19 @@ export default function NewsExplorer({
                   ))}
                 </div>
               ) : (
-                <h2 className="text-sm font-semibold text-zinc-600">
+                <h2 className="text-sm font-semibold text-zinc-400">
                   Results for “{searchedQuery}”
                 </h2>
               )}
             </div>
             {activeView === "news" && (
-              <div className="flex flex-wrap items-center gap-4 text-sm font-semibold text-zinc-500">
-                <span className="text-zinc-600">
+              <div className="flex flex-wrap items-center gap-4 text-sm font-semibold text-zinc-400">
+                <span className="text-zinc-400">
                   {newsRankMode === "trending"
                     ? trendingTopic ?? "Trending"
                     : "Last 30 days"}
                 </span>
-                <div className="flex overflow-hidden rounded-full border border-zinc-200 bg-white shadow-sm">
+                <div className="flex overflow-hidden rounded-none border border-[#292929] bg-[#0e0e0e] shadow-sm">
                   {(["grid", "list"] as NewsLayout[]).map((layout) => (
                     <button
                       key={layout}
@@ -655,8 +655,8 @@ export default function NewsExplorer({
                       onClick={() => setNewsLayout(layout)}
                       className={`grid h-8 w-9 place-items-center transition-colors ${
                         newsLayout === layout
-                          ? "bg-zinc-950 text-white"
-                          : "text-zinc-500 hover:text-zinc-950"
+                          ? "bg-[#171717] text-white"
+                          : "text-zinc-400 hover:text-zinc-100"
                       }`}
                     >
                       {layout === "grid" ? (
@@ -724,8 +724,8 @@ export default function NewsExplorer({
                     onClick={loadNextPage}
                     className={`border px-5 py-3 font-mono text-[11px] uppercase tracking-[0.14em] transition-colors disabled:cursor-wait ${
                       isLoadingMore
-                        ? "border-zinc-950 bg-zinc-950 text-white"
-                        : "rounded-full border-zinc-200 bg-white text-zinc-600 shadow-sm hover:border-zinc-300 hover:text-zinc-950"
+                        ? "border-[#444444] bg-[#171717] text-white"
+                        : "rounded-none border-[#292929] bg-[#0e0e0e] text-zinc-400 shadow-sm hover:border-[#444444] hover:text-zinc-100"
                     }`}
                   >
                     {isLoadingMore ? "Loading..." : "Load next 12"}
@@ -738,9 +738,9 @@ export default function NewsExplorer({
               </div>
             </>
           ) : (
-            <div className="rounded-2xl border border-dashed border-zinc-300 bg-white px-6 py-20 text-center">
-              <h3 className="text-2xl font-semibold text-zinc-950">No news found</h3>
-              <p className="mt-3 text-sm text-zinc-500">Try a broader topic such as agents, LLMs, or infrastructure.</p>
+            <div className="rounded-none border border-dashed border-[#444444] bg-[#0e0e0e] px-6 py-20 text-center">
+              <h3 className="text-2xl font-semibold text-zinc-100">No news found</h3>
+              <p className="mt-3 text-sm text-zinc-400">Try a broader topic such as agents, LLMs, or infrastructure.</p>
             </div>
           )}
       </div>

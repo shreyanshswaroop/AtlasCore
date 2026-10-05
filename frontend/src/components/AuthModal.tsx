@@ -166,22 +166,22 @@ export default function AuthModal({
         }
       }}
     >
-      <div className="relative w-full max-w-[440px] rounded-2xl border border-white/15 bg-zinc-950/70 backdrop-blur-2xl px-8 py-8 text-zinc-100 shadow-2xl shadow-zinc-950/30 sm:px-10">
+      <div className="relative w-full max-w-[440px] rounded-none border border-white/15 bg-zinc-950/70 backdrop-blur-2xl px-8 py-8 text-zinc-100 shadow-2xl shadow-zinc-950/30 sm:px-10">
         <button
           type="button"
           aria-label="Close authentication dialog"
           onClick={onClose}
-          className="absolute right-4 top-4 grid h-8 w-8 place-items-center rounded-full font-mono text-2xl leading-none text-zinc-200 hover:bg-white/10 hover:text-white"
+          className="absolute right-4 top-4 grid h-8 w-8 place-items-center rounded-none font-mono text-2xl leading-none text-zinc-200 hover:bg-white/10 hover:text-white"
         >
           ×
         </button>
 
         {isAuthConfirmed ? (
           <div className="flex min-h-[330px] flex-col items-center justify-center text-center">
-            <div className="mb-6 grid h-16 w-16 place-items-center rounded-full border border-white/20 bg-zinc-950/45">
+            <div className="mb-6 grid h-16 w-16 place-items-center rounded-none border border-white/20 bg-zinc-950/45">
               <span
                 aria-hidden="true"
-                className="grid h-9 w-9 place-items-center rounded-full border-2 border-zinc-200 font-mono text-lg text-white animate-[auth-success-pop_420ms_ease-out_both]"
+                className="grid h-9 w-9 place-items-center rounded-none border-2 border-zinc-200 font-mono text-lg text-white animate-[auth-success-pop_420ms_ease-out_both]"
               >
                 ✓
               </span>
@@ -232,7 +232,7 @@ export default function AuthModal({
                         onClick={() => setSelectedRole(role)}
                         className={`h-10 border px-3 text-left font-mono text-[11px] font-bold uppercase tracking-[0.1em] transition ${
                           isSelected
-                            ? "border-white/45 bg-white/18 text-white"
+                            ? "border-violet-500/50 bg-violet-900/30 text-white"
                             : "border-white/20 bg-zinc-950/45 text-zinc-200 hover:border-white/30 hover:text-white"
                         }`}
                       >
@@ -258,7 +258,7 @@ export default function AuthModal({
                         onClick={() => toggleValue(topic.label, selectedTopics, setSelectedTopics)}
                         className={`border px-2.5 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.1em] transition ${
                           isSelected
-                            ? "border-white/45 bg-white/18 text-white"
+                            ? "border-violet-500/50 bg-violet-900/30 text-white"
                             : "border-white/20 bg-zinc-950/45 text-zinc-200 hover:border-white/30 hover:text-white"
                         }`}
                       >
@@ -284,7 +284,7 @@ export default function AuthModal({
                         onClick={() => toggleValue(contentType, selectedContentTypes, setSelectedContentTypes)}
                         className={`h-10 border px-2 font-mono text-[10px] font-bold uppercase tracking-[0.1em] transition ${
                           isSelected
-                            ? "border-white/45 bg-white/18 text-white"
+                            ? "border-violet-500/50 bg-violet-900/30 text-white"
                             : "border-white/20 bg-zinc-950/45 text-zinc-200 hover:border-white/30 hover:text-white"
                         }`}
                       >
@@ -304,13 +304,13 @@ export default function AuthModal({
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="flex h-12 w-full items-center justify-center rounded-xl bg-zinc-100 px-5 font-mono text-[12px] font-bold uppercase tracking-[0.14em] text-black hover:bg-white disabled:cursor-wait disabled:bg-zinc-700 disabled:text-zinc-200"
+                className="flex h-12 w-full items-center justify-center rounded-none bg-violet-800 px-5 font-mono text-[12px] font-bold uppercase tracking-[0.14em] text-white hover:bg-violet-700 disabled:cursor-wait disabled:bg-[#1c1c1c] disabled:text-zinc-400"
               >
                 {isSubmitting ? (
                   <>
                     <span
                       aria-hidden="true"
-                      className="mr-3 h-4 w-4 rounded-full border-2 border-zinc-500 border-t-black animate-spin"
+                      className="mr-3 h-4 w-4 rounded-full border-2 border-zinc-500 border-t-white animate-spin"
                     />
                     <span>Building feed...</span>
                   </>
@@ -351,7 +351,7 @@ export default function AuthModal({
                     maxLength={120}
                     value={fullName}
                     onChange={(event) => setFullName(event.target.value)}
-                    className="h-12 w-full rounded-xl border border-white/20 bg-zinc-950/45 px-4 font-mono text-sm text-white outline-none placeholder:text-[11px] placeholder:uppercase placeholder:tracking-[0.11em] placeholder:text-zinc-300 hover:border-white/30 hover:bg-zinc-950/55 hover:placeholder:text-zinc-300 focus:border-white/40 focus:bg-zinc-950/55"
+                    className="h-12 w-full rounded-none border border-white/20 bg-zinc-950/45 px-4 font-mono text-sm text-white outline-none placeholder:text-[11px] placeholder:uppercase placeholder:tracking-[0.11em] placeholder:text-zinc-300 hover:border-white/30 hover:bg-zinc-950/55 hover:placeholder:text-zinc-300 focus:border-white/40 focus:bg-zinc-950/55"
                     placeholder="Name"
                   />
                 </div>
@@ -368,7 +368,7 @@ export default function AuthModal({
                 required
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
-                className="h-12 w-full rounded-xl border border-white/20 bg-zinc-950/45 px-4 font-mono text-sm text-white outline-none placeholder:text-[11px] placeholder:uppercase placeholder:tracking-[0.11em] placeholder:text-zinc-300 hover:border-white/30 hover:bg-zinc-950/55 hover:placeholder:text-zinc-300 focus:border-white/40 focus:bg-zinc-950/55"
+                className="h-12 w-full rounded-none border border-white/20 bg-zinc-950/45 px-4 font-mono text-sm text-white outline-none placeholder:text-[11px] placeholder:uppercase placeholder:tracking-[0.11em] placeholder:text-zinc-300 hover:border-white/30 hover:bg-zinc-950/55 hover:placeholder:text-zinc-300 focus:border-white/40 focus:bg-zinc-950/55"
                 placeholder="Email"
               />
             </div>
@@ -385,7 +385,7 @@ export default function AuthModal({
                   minLength={isSignup ? 8 : undefined}
                   value={password}
                   onChange={(event) => setPassword(event.target.value)}
-                  className="h-12 w-full rounded-xl border border-white/20 bg-zinc-950/45 px-4 font-mono text-sm text-white outline-none placeholder:text-[11px] placeholder:uppercase placeholder:tracking-[0.11em] placeholder:text-zinc-300 hover:border-white/30 hover:bg-zinc-950/55 hover:placeholder:text-zinc-300 focus:border-white/40 focus:bg-zinc-950/55"
+                  className="h-12 w-full rounded-none border border-white/20 bg-zinc-950/45 px-4 font-mono text-sm text-white outline-none placeholder:text-[11px] placeholder:uppercase placeholder:tracking-[0.11em] placeholder:text-zinc-300 hover:border-white/30 hover:bg-zinc-950/55 hover:placeholder:text-zinc-300 focus:border-white/40 focus:bg-zinc-950/55"
                   placeholder="Password"
                 />
               </div>
@@ -399,13 +399,13 @@ export default function AuthModal({
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="group flex h-12 w-full items-center justify-center overflow-hidden rounded-xl bg-zinc-100 px-5 font-mono text-[12px] font-bold uppercase tracking-[0.14em] text-black hover:bg-white focus-visible:bg-white disabled:cursor-not-allowed disabled:bg-zinc-700 disabled:text-zinc-200"
+                className="group flex h-12 w-full items-center justify-center overflow-hidden rounded-none bg-violet-800 px-5 font-mono text-[12px] font-bold uppercase tracking-[0.14em] text-white hover:bg-violet-700 focus-visible:bg-violet-700 disabled:cursor-not-allowed disabled:bg-[#1c1c1c] disabled:text-zinc-400"
               >
                 {isSubmitting ? (
                   <>
                     <span
                       aria-hidden="true"
-                      className="mr-3 h-4 w-4 rounded-full border-2 border-zinc-500 border-t-black animate-spin"
+                      className="mr-3 h-4 w-4 rounded-full border-2 border-zinc-500 border-t-white animate-spin"
                     />
                     <span>{isSignup ? "Creating..." : "Signing in..."}</span>
                   </>

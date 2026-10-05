@@ -51,7 +51,7 @@ function HighlightedText({
     <>
       {parts.map((part, index) =>
         part.toLowerCase() === cleanedQuery.toLowerCase() ? (
-          <mark key={`${part}-${index}`} className="bg-zinc-200 px-0.5 text-black">
+          <mark key={`${part}-${index}`} className="bg-[#1c1c1c] px-0.5 text-white">
             {part}
           </mark>
         ) : (
@@ -200,13 +200,10 @@ export default function Navbar() {
 
   return (
     <>
-    <header className="sticky top-0 z-50 border-b border-zinc-200 bg-white/90 backdrop-blur">
+    <header className="sticky top-0 z-50 border-b border-[#242424] bg-black/75 backdrop-blur-xl">
       <nav className="mx-auto flex h-16 w-full max-w-[1540px] items-center gap-4 px-4 sm:px-6 lg:px-8">
         <div className="flex items-center gap-8">
-          <Link href="/" className="flex items-center gap-2.5 text-zinc-950">
-            <span className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-zinc-950 via-red-600 to-zinc-950 text-sm font-black text-white">
-              AC
-            </span>
+          <Link href="/" className="flex items-center text-zinc-100">
             <span className="text-xl font-bold leading-6">
               AtlasCore
             </span>
@@ -217,7 +214,7 @@ export default function Navbar() {
               <Link
                 key={item.label}
                 href={item.href}
-                className="text-sm font-semibold text-zinc-700 hover:text-zinc-950 focus-visible:text-zinc-950"
+                className="text-sm font-semibold text-zinc-300 hover:text-zinc-100 focus-visible:text-zinc-100"
               >
                 {item.label}
               </Link>
@@ -225,7 +222,7 @@ export default function Navbar() {
             {currentUser && (
               <Link
                 href="/bookmarks"
-                className="text-sm font-semibold text-zinc-700 hover:text-zinc-950 focus-visible:text-zinc-950"
+                className="text-sm font-semibold text-zinc-300 hover:text-zinc-100 focus-visible:text-zinc-100"
               >
                 Bookmarks
               </Link>
@@ -245,14 +242,11 @@ export default function Navbar() {
           >
             <form
               onSubmit={handleSearch}
-              className="flex h-10 w-[260px] overflow-hidden rounded-full border border-zinc-200 bg-zinc-50 transition-[width,border-color,background-color] duration-300 ease-out hover:w-[500px] hover:border-zinc-300 focus-within:w-[500px] focus-within:border-zinc-500 focus-within:bg-white"
+              className="flex h-10 w-[220px] overflow-hidden border border-[#292929] bg-black transition-[width,border-color] duration-300 ease-out hover:w-[400px] hover:border-[#444444] focus-within:w-[400px] focus-within:border-zinc-500"
             >
               <label htmlFor="navbar-news-search" className="sr-only">
                 Search AI news
               </label>
-              <span className="grid w-9 shrink-0 place-items-center text-zinc-400">
-                ⌕
-              </span>
               <input
                 id="navbar-news-search"
                 type="search"
@@ -271,8 +265,8 @@ export default function Navbar() {
                   }
                 }}
                 onFocus={() => setIsSearchOpen(true)}
-                placeholder="Search news..."
-                className="min-w-0 flex-1 bg-transparent px-2 text-sm font-semibold text-zinc-950 outline-none placeholder:font-semibold placeholder:text-zinc-500"
+                placeholder="Search"
+                className="min-w-0 flex-1 bg-transparent pl-4 pr-2 text-sm font-light text-zinc-100 outline-none placeholder:font-light placeholder:text-zinc-400"
               />
               {query.trim() && (
                 <button
@@ -283,22 +277,32 @@ export default function Navbar() {
                     setCompanyResults([]);
                     setArticleResults([]);
                   }}
-                  className="grid w-9 shrink-0 place-items-center text-lg leading-none text-zinc-400 hover:text-zinc-950"
+                  className="grid w-9 shrink-0 place-items-center text-lg leading-none text-zinc-400 hover:text-zinc-100"
                 >
                   ×
                 </button>
               )}
+              <button
+                type="submit"
+                aria-label="Search"
+                className="grid w-10 shrink-0 place-items-center text-zinc-400 hover:text-zinc-100"
+              >
+                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" className="h-4 w-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="10.75" cy="10.75" r="6.75" />
+                  <path d="m16 16 4.5 4.5" />
+                </svg>
+              </button>
             </form>
 
             {isSearchOpen && query.trim() && (
-              <div className="absolute right-0 top-12 z-50 w-[500px] max-w-[calc(100vw-2rem)] rounded-2xl border border-zinc-200 bg-white p-3.5 shadow-2xl shadow-zinc-950/10">
-                <div className="mb-4 flex items-center gap-3 text-[13px] font-bold uppercase tracking-[0.14em] text-zinc-950">
-                  <span className="text-zinc-500">⌕</span>
+              <div className="absolute right-0 top-12 z-50 w-[400px] max-w-[calc(100vw-2rem)] rounded-none border border-[#292929] bg-[#0e0e0e] p-3.5 shadow-2xl shadow-zinc-950/10">
+                <div className="mb-4 flex items-center gap-3 text-[13px] font-bold uppercase tracking-[0.14em] text-zinc-100">
+                  <span className="text-zinc-400">⌕</span>
                   <span className="truncate">{query.trim()}</span>
                 </div>
 
                 <div>
-                  <p className="border-b border-zinc-100 pb-2.5 text-[11px] font-bold uppercase tracking-[0.12em] text-zinc-500">
+                  <p className="border-b border-[#242424] pb-2.5 text-[11px] font-bold uppercase tracking-[0.12em] text-zinc-400">
                     Companies
                   </p>
                   <div className="py-2">
@@ -308,9 +312,9 @@ export default function Navbar() {
                           key={company.slug}
                           href={`/companies/${company.slug}`}
                           onClick={() => setIsSearchOpen(false)}
-                          className="flex items-center gap-3 rounded-lg px-2 py-2 text-sm font-semibold text-zinc-600 hover:bg-zinc-50 hover:text-zinc-950"
+                          className="flex items-center gap-3 rounded-none px-2 py-2 text-sm font-semibold text-zinc-400 hover:bg-[#111111] hover:text-zinc-100"
                         >
-                          <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-zinc-100 text-[8px] uppercase text-zinc-600">
+                          <span className="grid h-6 w-6 shrink-0 place-items-center rounded-none bg-[#111111] text-[8px] uppercase text-zinc-400">
                             {company.company.slice(0, 2)}
                           </span>
                           <span className="truncate">
@@ -327,7 +331,7 @@ export default function Navbar() {
                 </div>
 
                 <div className="mt-3">
-                  <p className="border-b border-zinc-100 pb-2.5 text-[11px] font-bold uppercase tracking-[0.12em] text-zinc-500">
+                  <p className="border-b border-[#242424] pb-2.5 text-[11px] font-bold uppercase tracking-[0.12em] text-zinc-400">
                     Articles
                   </p>
                   <div className="py-2">
@@ -337,9 +341,9 @@ export default function Navbar() {
                           key={article.id}
                           href={`/news/${encodeURIComponent(article.id)}`}
                           onClick={() => setIsSearchOpen(false)}
-                          className="flex items-center gap-3 rounded-lg px-2 py-2 text-sm font-semibold text-zinc-600 hover:bg-zinc-50 hover:text-zinc-950"
+                          className="flex items-center gap-3 rounded-none px-2 py-2 text-sm font-semibold text-zinc-400 hover:bg-[#111111] hover:text-zinc-100"
                         >
-                          <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-zinc-100 text-[8px] uppercase text-zinc-600">
+                          <span className="grid h-6 w-6 shrink-0 place-items-center rounded-none bg-[#111111] text-[8px] uppercase text-zinc-400">
                             {(article.source_name ?? "AI").slice(0, 2)}
                           </span>
                           <span className="truncate">
@@ -358,7 +362,7 @@ export default function Navbar() {
                 <button
                   type="button"
                   onClick={submitSearch}
-                  className="mt-3 w-full rounded-xl bg-zinc-950 px-4 py-3 text-[12px] font-bold uppercase tracking-[0.14em] text-white hover:bg-zinc-950"
+                  className="mt-3 w-full rounded-none bg-zinc-950 px-4 py-3 text-[12px] font-bold uppercase tracking-[0.14em] text-white hover:bg-zinc-950"
                 >
                   View all results
                 </button>
@@ -392,12 +396,9 @@ export default function Navbar() {
                     aria-haspopup="menu"
                     aria-expanded={isProfileMenuOpen}
                     onClick={() => setIsProfileMenuOpen((isOpen) => !isOpen)}
-                    className="flex h-10 items-center gap-2 rounded-full border border-zinc-200 bg-white px-2.5 text-[11px] font-bold uppercase tracking-[0.12em] text-zinc-700 shadow-sm hover:border-zinc-300 hover:text-zinc-950"
+                    className="flex h-10 items-center border border-[#292929] bg-black px-3 text-[11px] font-bold uppercase tracking-[0.12em] text-zinc-300 hover:border-[#444444] hover:text-zinc-100"
                   >
-                    <span className="grid h-7 w-7 place-items-center rounded-full bg-zinc-950 text-[9px] text-white">
-                      {currentUser.full_name.slice(0, 2)}
-                    </span>
-                    <span className="hidden max-w-28 truncate sm:block">
+                    <span className="max-w-28 truncate">
                       {currentUser.full_name}
                     </span>
                   </button>
@@ -405,24 +406,20 @@ export default function Navbar() {
                   {isProfileMenuOpen && (
                     <div
                       role="menu"
-                      className="absolute right-0 top-12 z-[80] w-56 overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-2xl shadow-zinc-950/10 animate-[auth-form-in_180ms_ease-out_both]"
+                      className="absolute right-0 top-12 z-[80] w-56 overflow-hidden rounded-none border border-[#292929] bg-[#0e0e0e] shadow-2xl shadow-zinc-950/10 animate-[auth-form-in_180ms_ease-out_both]"
                     >
-                      <div className="flex items-center gap-3 border-b border-zinc-100 p-3">
-                        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-zinc-950 text-[11px] font-bold uppercase text-white">
-                          {currentUser.full_name.slice(0, 2)}
-                        </span>
-
-                        <p className="min-w-0 truncate text-[11px] font-bold uppercase tracking-[0.08em] text-zinc-950">
+                      <div className="border-b border-[#242424] p-3">
+                        <p className="min-w-0 truncate text-[11px] font-bold uppercase tracking-[0.08em] text-zinc-100">
                           {currentUser.full_name.replaceAll(" ", "_")}
                         </p>
                       </div>
 
-                      <div className="border-b border-zinc-100 py-1">
+                      <div className="border-b border-[#242424] py-1">
                         <Link
                           href="/profile"
                           role="menuitem"
                           onClick={() => setIsProfileMenuOpen(false)}
-                          className="flex h-10 items-center gap-3 px-3 text-[11px] font-semibold uppercase tracking-[0.12em] text-zinc-500 hover:bg-zinc-50 hover:text-zinc-950"
+                          className="flex h-10 items-center gap-3 px-3 text-[11px] font-semibold uppercase tracking-[0.12em] text-zinc-400 hover:bg-[#111111] hover:text-zinc-100"
                         >
                           <span aria-hidden="true" className="w-4 text-base">
                             ⚙
@@ -434,7 +431,7 @@ export default function Navbar() {
                           href="/bookmarks"
                           role="menuitem"
                           onClick={() => setIsProfileMenuOpen(false)}
-                          className="flex h-10 items-center gap-3 px-3 text-[11px] font-semibold uppercase tracking-[0.12em] text-zinc-500 hover:bg-zinc-50 hover:text-zinc-950"
+                          className="flex h-10 items-center gap-3 px-3 text-[11px] font-semibold uppercase tracking-[0.12em] text-zinc-400 hover:bg-[#111111] hover:text-zinc-100"
                         >
                           <span aria-hidden="true" className="w-4 text-base">
                             ★
@@ -446,7 +443,7 @@ export default function Navbar() {
                           href="/about"
                           role="menuitem"
                           onClick={() => setIsProfileMenuOpen(false)}
-                          className="flex h-10 items-center gap-3 px-3 text-[11px] font-semibold uppercase tracking-[0.12em] text-zinc-500 hover:bg-zinc-50 hover:text-zinc-950"
+                          className="flex h-10 items-center gap-3 px-3 text-[11px] font-semibold uppercase tracking-[0.12em] text-zinc-400 hover:bg-[#111111] hover:text-zinc-100"
                         >
                           <span aria-hidden="true" className="w-4 text-base">
                             ▤
@@ -460,7 +457,7 @@ export default function Navbar() {
                         role="menuitem"
                         onClick={handleSignOut}
                         disabled={isSigningOut}
-                        className="flex h-10 w-full items-center gap-3 px-3 text-left text-[11px] font-semibold uppercase tracking-[0.12em] text-zinc-500 hover:bg-zinc-50 hover:text-zinc-950 disabled:cursor-wait disabled:text-zinc-300"
+                        className="flex h-10 w-full items-center gap-3 px-3 text-left text-[11px] font-semibold uppercase tracking-[0.12em] text-zinc-400 hover:bg-[#111111] hover:text-zinc-100 disabled:cursor-wait disabled:text-zinc-300"
                       >
                         <span aria-hidden="true" className="w-4 text-base">
                           ↪
@@ -476,14 +473,14 @@ export default function Navbar() {
                 <button
                   type="button"
                   onClick={() => setAuthMode("signin")}
-                  className="flex h-10 items-center px-2 text-sm font-semibold text-zinc-600 hover:text-zinc-950"
+                  className="flex h-10 items-center px-2 text-sm font-semibold text-zinc-400 hover:text-zinc-100"
                 >
                   Sign in
                 </button>
                 <button
                   type="button"
                   onClick={() => setAuthMode("signup")}
-                  className="flex h-10 items-center rounded-full bg-zinc-950 px-4 text-sm font-semibold text-white hover:bg-zinc-950"
+                  className="flex h-10 items-center border border-[#383838] bg-black px-4 text-sm font-semibold text-white hover:bg-[#111111]"
                 >
                   Sign up
                 </button>
