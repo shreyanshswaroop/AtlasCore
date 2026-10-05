@@ -4,6 +4,12 @@
 
 ### Production-Ready AI Research Intelligence Platform
 
+A full-stack cloud-native platform for discovering and analyzing
+AI research, technology news, and company intelligence.
+
+[ Watch Demo](https://drive.google.com/file/d/1CEZQR0xVvFUmi63g1NnIbOWPMzO72Ptl/view?usp=share_link)
+
+
 Containerized • Cloud Native • DevOps • Kubernetes • CI/CD • Infrastructure as Code
 
 ![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
